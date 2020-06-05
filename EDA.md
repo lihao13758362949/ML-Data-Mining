@@ -3,16 +3,18 @@
 参考资料：
 1. [pandas分批读取大数据集](https://blog.csdn.net/htbeker/article/details/86542412)
 2. [智慧海洋建设baseline——wbbhcb](https://github.com/wbbhcb/zhhyjs_baseline)
-3. [Comprehensive data exploration with Python](https://www.kaggle.com/pmarcelino/comprehensive-data-exploration-with-python)
+3. [（回归问题）Comprehensive data exploration with Python](https://www.kaggle.com/pmarcelino/comprehensive-data-exploration-with-python)
+4. [（分类问题）Titanic Data Science Solutions](https://www.kaggle.com/startupsci/titanic-data-science-solutions)
 # 1 EDA概述
 EDA (Exploratory Data Analysis)，也就是对数据进行探索性的分析，从而为之后的[数据预处理](https://blog.csdn.net/weixin_42297855/article/details/97629534)和[特征工程](https://blog.csdn.net/weixin_42297855/article/details/97505444)提供必要的结论。
 主要的步骤是：
 1. 理解问题；
 2. 读取数据；
-3. 初步探索；
-4. 多变量探索；
-5. 数据预处理；
-6. 建立假设，并检验。
+3. 数据预预处理
+4. 初步探索；
+5. 多变量探索；
+6. 数据预处理；
+7. 建立假设，并检验。
 
 
 
@@ -93,54 +95,13 @@ df_test = get_data(test_path, False)
 5. 各个变量的数据质量分析（缺失值、重复值、异常值、歧义值）
 6. 如果是分类问题还需要分析下正负样本比例（样本不平衡问题）
 
-`df.info()`
-
-`df.columns`：显示所有的变量名
-
-`df.shape`：shape
-
-`df.head()`：给前几个样本
-
-`df.tail()`：给后几个样本
-
-`df.sample(10)`：随机给几个样本
-
-`df.describe()`：连续变量的一些描述信息，如基本统计量、分布等。
-
-`df.describe(include=['O'])`：分类变量的一些描述信息。
-
-`df.describe(include='all')`：全部变量的一些描述信息。
-
-`Y_train.value_counts()`：观察取值数量
 
 ## 3.2 多变量探索
-```py
-# 列表汇总
-train_df[['Pclass', 'Survived']].groupby(['Pclass'], as_index=False).mean().sort_values(by='Survived', ascending=False)
-```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20190922221630446.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MjI5Nzg1NQ==,size_16,color_FFFFFF,t_70)
-```py
-# 对比，直方图
-g = sns.FacetGrid(train_df, col='Survived')
-g.map(plt.hist, 'Age', bins=20)
-```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/2019092422214917.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MjI5Nzg1NQ==,size_16,color_FFFFFF,t_70)
-```py
-# 散点图
-var = 'GrLivArea'
-data = pd.concat([df_train['SalePrice'], df_train[var]], axis=1)
-data.plot.scatter(x=var, y='SalePrice', ylim=(0,800000));
-```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20191209204304426.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MjI5Nzg1NQ==,size_16,color_FFFFFF,t_70)
-```py
-# 分类变量，箱图
-var = 'OverallQual'
-data = pd.concat([df_train['SalePrice'], df_train[var]], axis=1)
-f, ax = plt.subplots(figsize=(8, 6))
-fig = sns.boxplot(x=var, y="SalePrice", data=data)
-fig.axis(ymin=0, ymax=800000);
-```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20191209204250397.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MjI5Nzg1NQ==,size_16,color_FFFFFF,t_70)
+列表汇总
+对比，直方图
+散点图
+分类变量，箱图
+
 ```py
 # 相关分析，热度图heatmaps1
 corrmat = df_train.corr()
