@@ -102,14 +102,23 @@ df_test = get_data(test_path, False)
 6. 如果是分类问题还需要分析下正负样本比例（样本不平衡问题）
 
 `df.info()`
+
 `df.columns`：显示所有的变量名
+
 `df.shape`：shape
+
 `df.head()`：给前几个样本
+
 `df.tail()`：给后几个样本
+
 `df.sample(10)`：随机给几个样本
+
 `df.describe()`：连续变量的一些描述信息，如基本统计量、分布等。
+
 `df.describe(include=['O'])`：分类变量的一些描述信息。
+
 `df.describe(include='all')`：全部变量的一些描述信息。
+
 `Y_train.value_counts()`：观察取值数量
 
 ## 3.2 多变量探索
