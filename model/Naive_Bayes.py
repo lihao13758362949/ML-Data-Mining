@@ -1,3 +1,5 @@
+# 贝叶斯思想，https://blog.csdn.net/weixin_42297855/article/details/99203056
+
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
