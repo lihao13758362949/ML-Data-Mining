@@ -1,0 +1,52 @@
+# 回归器评价指标
+.mean_squared_error(y_true, y_pred, sample_weight=None, multioutput=’uniform_average’)
+.max_error(y_true, y_pred)
+.mean_absolute_error(y_true, y_pred, sample_weight=None, multioutput=’uniform_average’)
+>>explained_variance_score
+>mean_squared_log_error
+>median_absolute_error
+>r2_score
+
+# 分类器评价指标
+.accuracy_score(y_true, y_pred, normalize=True, sample_weight=None)
+# normalize：默认返回正确率，若为False则返回预测正确的样本数。
+
+.balanced_accuracy_score(y_true, y_pred, sample_weight=None, adjusted=False)
+# adjusted：
+
+.average_precision_score(y_true, y_score, average=’macro’, pos_label=1, sample_weight=None)
+.recall_score(y_true, y_pred, labels=None, pos_label=1, average=’binary’, sample_weight=None)
+.precision_score(y_true, y_pred, labels=None, pos_label=1, average=’binary’, sample_weight=None)
+.f1_score(y_true, y_pred, labels=None, pos_label=1, average=’binary’, sample_weight=None)
+# average：可指定micro和macro
+
+.log_loss(y_true, y_pred, eps=1e-15, normalize=True, sample_weight=None, labels=None)
+average_precision_score
+brier_score_loss
+jaccard_score
+
+.roc_auc_score(y_true, y_score, average=’macro’, sample_weight=None, max_fpr=None)
+
+# 聚类器评价指标
+.adjusted_rand_score(labels_true, labels_pred)：ARI指数
+.mutual_info_score(labels_true, labels_pred, contingency=None)：互信息
+.adjusted_mutual_info_score(labels_true, labels_pred, average_method=’warn’)
+.normalized_mutual_info_score(labels_true, labels_pred, average_method=’warn’)
+.completeness_score(labels_true, labels_pred)完备性
+.homogeneity_score(labels_true, labels_pred)：同质性
+.homogeneity_completeness_v_measure(labels_true, labels_pred, beta=1.0)
+.v_measure_score(labels_true, labels_pred, beta=1.0)
+.fowlkes_mallows_score(labels_true, labels_pred, sparse=False)
+.silhouette_score(X, labels, metric=’euclidean’, sample_size=None, random_state=None, **kwds) 轮廓系数
+.calinski_harabasz_score(X, labels)
+.davies_bouldin_score(X, labels)
+.contingency_matrix(labels_true, labels_pred, eps=None, sparse=False)
+
+# 回归器评价指标
+.mean_squared_error(y_true, y_pred, sample_weight=None, multioutput=’uniform_average’)
+.max_error(y_true, y_pred)
+.mean_absolute_error(y_true, y_pred, sample_weight=None, multioutput=’uniform_average’)
+explained_variance_score
+mean_squared_log_error
+median_absolute_error
+r2_score
