@@ -85,7 +85,7 @@ def ElasticNet_model_train(X,y,alpha=0.05,l1_ratio=0.4,type=1,test_size=0.3,cv=1
 
 #def linear_model_outputs:
       
-
+# .LogisticRegression
 
 # 可视化
 def linear_model_plot(X,y,type=1)
