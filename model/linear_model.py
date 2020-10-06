@@ -41,7 +41,14 @@ def Ridge_model_train(X,y,alpha=0.05,type=1,test_size=0.3,cv=10):
       # 岭回归 L2-penalty
       # alpha：超参数，惩罚项系数
       
-      
+      # 常规用法
+      reg = linear_model.Ridge(alpha=.5)
+      reg.fit([[0, 0], [0, 0], [1, 1]], [0, .1, 1])
+
+      reg.coef_
+
+      reg.intercept_
+      reg.predict([2,2])
       ## 搜索超参数1
       alphas = [0.05, 0.1, 0.3, 1, 3, 5, 10, 15, 30, 50, 75]
       cv_ridge = [rmse_cv(Ridge(alpha = alpha)).mean() for alpha in alphas]
@@ -68,6 +75,9 @@ def Ridge_model_train(X,y,alpha=0.05,type=1,test_size=0.3,cv=10):
       ridge= linear_model.Ridge(alpha=alpha)  # 设置lambda值
       ridge.fit(X,y)  #使用训练数据进行参数求解
       Y_hat1 = ridge.predict(X_test)  #对测试集的预测
+def rmse_cv(model):
+    rmse= np.sqrt(-cross_val_score(model, X_train, y, scoring="neg_mean_squared_error", cv = 5))
+    return(rmse)
 
 def Lasso_model_train(X,y,alpha=0.05,type=1,test_size=0.3,cv=10):
       # 岭回归 L1-penalty
