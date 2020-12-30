@@ -1,7 +1,7 @@
 from sklearn import model_selection
 
 # 1.留出法（hold-out)
-X_train, X_test, y_train, y_test = .train_test_split(data,target, test_size=0.4, random_state=0,stratify=None)
+X_train, X_test, y_train, y_test = model_selection.train_test_split(data,target, test_size=0.4, random_state=0,stratify=None)
 # test_size：测试集的比例
 # n_splits：k值，进行k次的分割
 # stratify：指定分层抽样变量，按该变量的类型分布分层抽样。
