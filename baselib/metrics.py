@@ -27,7 +27,8 @@ log_loss(y_true, y_pred, eps=1e-15, normalize=True, sample_weight=None, labels=N
 # jaccard_score
 
 roc_auc_score(y_true, y_score, average=’macro’, sample_weight=None, max_fpr=None)#roc曲线的auc分数
-
+classification_report(y_test, credit_pred)#综合报告
+confusion_matrix(y_test, credit_pred)# 混淆矩阵
 # 聚类器评价指标
 adjusted_rand_score(labels_true, labels_pred)：ARI指数
 mutual_info_score(labels_true, labels_pred, contingency=None)：互信息
