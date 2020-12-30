@@ -1,9 +1,18 @@
-from sklearn.tree import *
-DecisionTreeClassifier(criterion=’gini’, splitter=’best’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None, random_state=None, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, class_weight=None, presort=False)
-DecisionTreeRegressor(criterion=’mse’, splitter=’best’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None, random_state=None, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, presort=False)
+from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier
+
+# 参数
+class_weights = {1:1, 2:5}
+
+clf = DecisionTreeClassifier(min_samples_leaf = 6 ,class_weight=class_weights)
+clf.fit(X_train, y_train)
+#DecisionTreeClassifier(criterion=’gini’, splitter=’best’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None, random_state=None, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, class_weight=None, presort=False)
+#DecisionTreeRegressor(criterion=’mse’, splitter=’best’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None, random_state=None, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, presort=False)
 
 
-clf.predict_proba([[2., 2.]])#预测每个类的概率，即叶中相同类的训练样本的分数
+#clf.predict_proba([[2., 2.]])#预测每个类的概率，即叶中相同类的训练样本的分数
+pred = clf.predict(X_test)
+
 
 def get_leaf(train_x, train_y, val_x):
     from sklearn.tree import DecisionTreeClassifier
