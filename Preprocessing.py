@@ -1,4 +1,5 @@
-from sklearn.preprocessing import *
+from sklearn import preprocessing
+#from sklearn.preprocessing import *
 # 1. 删除重复数据
 .drop_duplicates(subset=,keep=) # 删除重复数据
 # subset：指出需要删除重复数据的列。
@@ -43,7 +44,8 @@ df_train = df_train.drop(df_train[df_train['Id'] == 1299].index)
 # 数据标准化
 #标准正态分布标准化
 Scaler=StandardScaler(copy=True, with_mean=True, with_std=True)
-Scaler=scale(X, axis=0, with_mean=True, with_std=True, copy=True)
+
+X_scaled = preprocessing.scale(X)  # Scaler=scale(X, axis=0, with_mean=True, with_std=True, copy=True)
 #Min-max归一化（以下是0-1归一化）
 Scaler=MinMaxScaler(feature_range=(0, 1), copy=True)
 Scaler=minmax_scale(X, feature_range=(0, 1), axis=0, copy=True)
