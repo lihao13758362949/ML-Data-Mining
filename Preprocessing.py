@@ -1,3 +1,5 @@
+# 数据预处理
+
 from sklearn import preprocessing
 #from sklearn.preprocessing import *
 # 1. 删除重复数据
@@ -30,7 +32,7 @@ all_data = all_data.fillna(all_data.mean())
 
 #偏正态分布，使用均值代替，可以保持数据的均值；偏长尾分布，使用中值代替，避免受 outlier 的影响
 
-# 异常值和歧义值处理
+# 3.异常值和歧义值处理
 # 标准化
 saleprice_scaled = StandardScaler().fit_transform(df_train['SalePrice'][:,np.newaxis])
 # 删除
@@ -68,7 +70,7 @@ print(high_range)
 
 
 
-# 编码
+# 4.编码
 
 title_mapping = {"Mr": 1, "Miss": 2, "Mrs": 3, "Master": 4, "Rare": 5} # 手动编码
 dataset['Title'].map(title_mapping)
@@ -101,3 +103,11 @@ LabelEncoder().fit_transform(data[feature].astype(np.str)
 
 # 连续变量离散化（分箱）
 连续特征离散化pandas.cut，然后通过pandas.Series.value_counts观察切分点，再将对应bins或者说区间的连续值通过pandas.DataFrame.replace或pandas.DataFrame.loc到离散点0,1,2,…后再进行编码。
+
+# 5. 不平衡数据处理
+# 过采样
+from imblearn.over_sampling import RandomOverSampler
+X = df.iloc[:,:-1].values
+y = df['quality'].values
+ros = RandomOverSampler()
+X, y = ros.fit_sample(X, y)
