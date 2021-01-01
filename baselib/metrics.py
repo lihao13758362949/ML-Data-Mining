@@ -30,6 +30,7 @@ roc_auc_score(y_true, y_score, average=’macro’, sample_weight=None, max_fpr=
 classification_report(y_test, credit_pred)#综合报告
 confusion_matrix(y_test, credit_pred)# 混淆矩阵
 # 聚类器评价指标
+#聚类的好坏不存在绝对标准
 adjusted_rand_score(labels_true, labels_pred)：ARI指数
 mutual_info_score(labels_true, labels_pred, contingency=None)：互信息
 adjusted_mutual_info_score(labels_true, labels_pred, average_method=’warn’)
