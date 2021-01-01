@@ -1,11 +1,7 @@
-# 1 集成学习概述
->Ensemble Learning 是指将多个不同的 Base Model 组合成一个 Ensemble Model 的方法。它可以同时降低最终模型的 Bias 和 Variance，从而在提高分数的同时又降低 Overfitting 的风险。在现在的 Kaggle 比赛中要不用 Ensemble 就拿到奖金几乎是不可能的。
+
 
 >**集成学习的两大问题**：每一轮如何改变训练数据的权值？如何将弱分类器组合成一个强分类器？
 
-从理论上讲，Ensemble 要成功，有两个要素：
-- Base Model 之间的相关性要尽可能的小。Ensemble 的 Diversity 越大，最终 Model 的 Bias 就越低。
-- Base Model 之间的性能表现不能差距太大，最好个体学习器的性能都是比较好的。这其实是一个 Trade-off，在实际中很有可能表现相近的 Model 只有寥寥几个而且它们之间相关性还不低。但是实践告诉我们即使在这种情况下 Ensemble 还是能大幅提高成绩。
 
 # 2 Bagging
 独立的训练一些基学习器(一般倾向于强大而复杂的模型比如完全生长的决策树)，然后综合他们的预测结果。
