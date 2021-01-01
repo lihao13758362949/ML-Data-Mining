@@ -46,6 +46,7 @@ df_train = df_train.drop(df_train[df_train['Id'] == 1299].index)
 # 数据标准化
 #标准正态分布标准化
 Scaler=StandardScaler(copy=True, with_mean=True, with_std=True)
+df[column]=StandardScaler().fit_transform(df[column][:,np.newaxis])
 
 X_scaled = preprocessing.scale(X)  # Scaler=scale(X, axis=0, with_mean=True, with_std=True, copy=True)
 #Min-max归一化（以下是0-1归一化）
@@ -111,3 +112,8 @@ X = df.iloc[:,:-1].values
 y = df['quality'].values
 ros = RandomOverSampler()
 X, y = ros.fit_sample(X, y)
+			     
+from imblearn.over_sampling import SMOTE			     
+# 定义SMOTE模型，random_state相当于随机数种子的作用
+smo = SMOTE(random_state=42)
+X_smo, y_smo = smo.fit_sample(X_train, y_train)
