@@ -1,5 +1,6 @@
-# Voting
-# 简单投票法
+# 集成学习
+
+
 from sklearn import datasets  
 from sklearn import model_selection  
 from sklearn.linear_model import LogisticRegression
@@ -8,6 +9,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import VotingClassifier
 import numpy as np
 
+# Voting
+# 简单投票法
 # 载入数据集
 iris = datasets.load_iris()  
 # 只要第1,2列的特征
@@ -139,17 +142,41 @@ for clf, label in zip([clf1, clf2, clf3, sclf],
     scores = model_selection.cross_val_score(clf, X, y,cv=3, scoring='accuracy')
     print("Accuracy: %0.2f [%s]" % (scores.mean(), label))
 
+    
 1. `.AdaBoostRegressor(base_estimator=None, n_estimators=50, learning_rate=1.0, loss=’linear’, random_state=None)`
 >`n_estimators`：基学习器数量
 >`base_estimator`：基学习器类型，默认`.tree.DecisionTreeRegressor(max_depth=3)`
 2. `.AdaBoostClassifier(base_estimator=None, n_estimators=50, learning_rate=1.0, algorithm=’SAMME.R’, random_state=None)`
 3. `.BaggingClassifier(base_estimator=None, n_estimators=10, max_samples=1.0, max_features=1.0, bootstrap=True, bootstrap_features=False, oob_score=False, warm_start=False, n_jobs=None, random_state=None, verbose=0)`
 4. `.BaggingRegressor(base_estimator=None, n_estimators=10, max_samples=1.0, max_features=1.0, bootstrap=True, bootstrap_features=False, oob_score=False, warm_start=False, n_jobs=None, random_state=None, verbose=0)`
-5. `.RandomForestClassifier(n_estimators=’warn’, criterion=’gini’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=’auto’, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, bootstrap=True, oob_score=False, n_jobs=None, random_state=None, verbose=0, warm_start=False, class_weight=None)`
-6. `.RandomForestRegressor(n_estimators=’warn’, criterion=’mse’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=’auto’, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, bootstrap=True, oob_score=False, n_jobs=None, random_state=None, verbose=0, warm_start=False)`
+
 7. `.ExtraTreesClassifier(n_estimators=’warn’, criterion=’gini’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=’auto’, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, bootstrap=False, oob_score=False, n_jobs=None, random_state=None, verbose=0, warm_start=False, class_weight=None)`
 8. `.ExtraTreesRegressor(n_estimators=’warn’, criterion=’mse’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=’auto’, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, bootstrap=False, oob_score=False, n_jobs=None, random_state=None, verbose=0, warm_start=False)`
 11. `.GradientBoostingClassifier(loss=’deviance’, learning_rate=0.1, n_estimators=100, subsample=1.0, criterion=’friedman_mse’, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_depth=3, min_impurity_decrease=0.0, min_impurity_split=None, init=None, random_state=None, max_features=None, verbose=0, max_leaf_nodes=None, warm_start=False, presort=’auto’, validation_fraction=0.1, n_iter_no_change=None, tol=0.0001)`
 12. `.GradientBoostingRegressor(loss=’ls’, learning_rate=0.1, n_estimators=100, subsample=1.0, criterion=’friedman_mse’, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_depth=3, min_impurity_decrease=0.0, min_impurity_split=None, init=None, random_state=None, max_features=None, alpha=0.9, verbose=0, max_leaf_nodes=None, warm_start=False, presort=’auto’, validation_fraction=0.1, n_iter_no_change=None, tol=0.0001)`
 13. `.HistGradientBoostingClassifier(loss=’auto’, learning_rate=0.1, max_iter=100, max_leaf_nodes=31, max_depth=None, min_samples_leaf=20, l2_regularization=0.0, max_bins=256, scoring=None, validation_fraction=0.1, n_iter_no_change=None, tol=1e-07, verbose=0, random_state=None)`：数据量较大时效果比`GradientBoostingClassifier`好得多。
 14. `.HistGradientBoostingRegressor(loss=’least_squares’, learning_rate=0.1, max_iter=100, max_leaf_nodes=31, max_depth=None, min_samples_leaf=20, l2_regularization=0.0, max_bins=256, scoring=None, validation_fraction=0.1, n_iter_no_change=None, tol=1e-07, verbose=0, random_state=None)`
+
+# RF随机森林
+# `.RandomForestClassifier(n_estimators=’warn’, criterion=’gini’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=’auto’, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, bootstrap=True, oob_score=False, n_jobs=None, random_state=None, verbose=0, warm_start=False, class_weight=None)`
+# `.RandomForestRegressor(n_estimators=’warn’, criterion=’mse’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=’auto’, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, bootstrap=True, oob_score=False, n_jobs=None, random_state=None, verbose=0, warm_start=False)`
+from sklearn.ensemble import RandomForestClassifier
+clf = RandomForestClassifier(n_estimators=100)
+clf.fit(X_train,y_train) 
+# 随机森林的可解释性
+importances = clf.feature_importances_
+#计算随机森林中所有的树的每个变量的重要性的标准差 
+std = np.std([tree.feature_importances_ for tree in clf.estimators_],axis=0)
+#按照变量的重要性排序后的索引 
+indices = np.argsort(importances)[::-1]
+# 绘图过程
+import matplotlib.pyplot as plt
+plt.figure()
+plt.figure(figsize=(10,5))
+plt.title("Feature importances")
+plt.bar(range(X.shape[1]), importances[indices], color="c", yerr=std[indices], align="center")
+plt.xticks(fontsize=14)
+plt.xticks(range(X.shape[1]), df.columns.values[:-1][indices],rotation=40)
+plt.xlim([-1, X.shape[1]])
+plt.tight_layout()
+plt.show()
