@@ -37,6 +37,35 @@ def LR_model_train(X,y,type=1,test_size=0.3,cv=10):
             % r2_score(y_test, y_pred))# 此句等价于regr.score(X_test, y_test)
       return predictions
 
+      # Linear Regression
+      lr = LinearRegression()
+      lr.fit(X_train, y_train)
+
+      # Look at predictions on training and validation set
+      print("RMSE on Training set :", rmse_cv_train(lr).mean())
+      print("RMSE on Test set :", rmse_cv_test(lr).mean())
+      y_train_pred = lr.predict(X_train)
+      y_test_pred = lr.predict(X_test)
+
+      # Plot residuals
+      plt.scatter(y_train_pred, y_train_pred - y_train, c = "blue", marker = "s", label = "Training data")
+      plt.scatter(y_test_pred, y_test_pred - y_test, c = "lightgreen", marker = "s", label = "Validation data")
+      plt.title("Linear regression")
+      plt.xlabel("Predicted values")
+      plt.ylabel("Residuals")
+      plt.legend(loc = "upper left")
+      plt.hlines(y = 0, xmin = 10.5, xmax = 13.5, color = "red")
+      plt.show()
+
+      # Plot predictions
+      plt.scatter(y_train_pred, y_train, c = "blue", marker = "s", label = "Training data")
+      plt.scatter(y_test_pred, y_test, c = "lightgreen", marker = "s", label = "Validation data")
+      plt.title("Linear regression")
+      plt.xlabel("Predicted values")
+      plt.ylabel("Real values")
+      plt.legend(loc = "upper left")
+      plt.plot([10.5, 13.5], [10.5, 13.5], c = "red")
+      plt.show()
 def Ridge_model_train(X,y,alpha=0.05,type=1,test_size=0.3,cv=10):
       # 岭回归 L2-penalty
       # alpha：超参数，惩罚项系数
@@ -75,8 +104,10 @@ def Ridge_model_train(X,y,alpha=0.05,type=1,test_size=0.3,cv=10):
       ridge= linear_model.Ridge(alpha=alpha)  # 设置lambda值
       ridge.fit(X,y)  #使用训练数据进行参数求解
       Y_hat1 = ridge.predict(X_test)  #对测试集的预测
+      
+scorer = make_scorer(mean_squared_error, greater_is_better = False)
 def rmse_cv(model):
-    rmse= np.sqrt(-cross_val_score(model, X_train, y, scoring="neg_mean_squared_error", cv = 5))
+    rmse= np.sqrt(-cross_val_score(model, X_train, y, scoring=scorer, cv = 5))
     return(rmse)
 
 def Lasso_model_train(X,y,alpha=0.05,type=1,test_size=0.3,cv=10):
@@ -85,6 +116,15 @@ def Lasso_model_train(X,y,alpha=0.05,type=1,test_size=0.3,cv=10):
       lasso= linear_model.Lasso(alpha=alpha)  # 设置lambda值
       lasso.fit(X,y)  #使用训练数据进行参数求解
       Y_hat2=lasso.predict(X_test)#对测试集预测
+      
+      model_lasso = LassoCV(alphas = [1, 0.1, 0.001, 0.0005]).fit(X_train, y)
+      #rmse_cv(model_lasso).mean()
+      coef = pd.Series(model_lasso.coef_, index = X_train.columns)
+      print("Lasso picked " + str(sum(coef != 0)) + " variables and eliminated the other " +  str(sum(coef == 0)) + " variables")
+      imp_coef = pd.concat([coef.sort_values().head(10),coef.sort_values().tail(10)])
+      #matplotlib.rcParams['figure.figsize'] = (8.0, 10.0)
+      #imp_coef.plot(kind = "barh")
+      #plt.title("Coefficients in the Lasso Model")
 
 def ElasticNet_model_train(X,y,alpha=0.05,l1_ratio=0.4,type=1,test_size=0.3,cv=10):
       # 岭回归 L1+L2-penalty
