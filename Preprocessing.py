@@ -33,11 +33,10 @@ all_data = all_data.fillna(all_data.mean())
 #偏正态分布，使用均值代替，可以保持数据的均值；偏长尾分布，使用中值代替，避免受 outlier 的影响
 
 # 3.异常值和歧义值处理
-# 标准化
-saleprice_scaled = StandardScaler().fit_transform(df_train['SalePrice'][:,np.newaxis])
 # 删除
 talExposureLog = totalExposureLog.loc[(totalExposureLog.pctr<=1000)]
 
+df_train.sort_values(by = 'GrLivArea', ascending = False)[:2]
 df_train = df_train.drop(df_train[df_train['Id'] == 1299].index)
 
 # 文本数据的清洗
@@ -72,6 +71,14 @@ print(high_range)
 
 
 # 4.编码
+train = train.replace({"MSSubClass" : {20 : "SC20", 30 : "SC30", 40 : "SC40", 45 : "SC45", 
+                                       50 : "SC50", 60 : "SC60", 70 : "SC70", 75 : "SC75", 
+                                       80 : "SC80", 85 : "SC85", 90 : "SC90", 120 : "SC120", 
+                                       150 : "SC150", 160 : "SC160", 180 : "SC180", 190 : "SC190"},
+                       "MoSold" : {1 : "Jan", 2 : "Feb", 3 : "Mar", 4 : "Apr", 5 : "May", 6 : "Jun",
+                                   7 : "Jul", 8 : "Aug", 9 : "Sep", 10 : "Oct", 11 : "Nov", 12 : "Dec"}
+                      })
+
 
 title_mapping = {"Mr": 1, "Miss": 2, "Mrs": 3, "Master": 4, "Rare": 5} # 手动编码
 dataset['Title'].map(title_mapping)
@@ -98,7 +105,7 @@ OneHotEncoder(n_values=None, categorical_features=None, categories=None, drop=No
 # `sparse`：默认为True表示用稀疏矩阵表示，一般使用`.toarray()`转换到False，即数组。
 OrdinalEncoder(categories=’auto’, dtype=<class ‘numpy.float64’>)# 序数编码
 LabelEncoder().fit_transform(data[feature].astype(np.str)
-#pd.get_dummies
+df_train = pd.get_dummies(df_train)
 #对于频数较少的那些分类变量可以归类到‘其他’pandas.DataFrame.replace后再进行编码。
 #对于字符型的特征，要在编码后转换数据类型pandas.DataFrame.astype
 
@@ -117,3 +124,12 @@ from imblearn.over_sampling import SMOTE
 # 定义SMOTE模型，random_state相当于随机数种子的作用
 smo = SMOTE(random_state=42)
 X_smo, y_smo = smo.fit_sample(X_train, y_train)
+
+
+# 6. 偏态分布处理
+test_normality = lambda x: stats.shapiro(x.fillna(0))[1] < 0.01
+normal = pd.DataFrame(train[quantitative])
+normal = normal.apply(test_normality)
+print(not normal.any())
+			     
+df_train['SalePrice'] = np.log(df_train['SalePrice'])# 对数转换
