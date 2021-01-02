@@ -5,9 +5,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import scipy.stats as st
 
 # 2.读取数据
+train = pd.read_csv('../input/train.csv')
 df=pd.read_excel(r'C:\Users\lihao\Desktop\学年论文\链家二手房房源信息精简.xlsx',header=0,names=['price','layout','floor','direction','fitup','area','type','region','look_7','look_30'])
 # 连接数据
 df = pd.concat([train.assign(is_train=1), test.assign(is_train=0)])
@@ -62,19 +63,75 @@ df.describe(include='all') #：全部变量的一些描述信息。
 df.SalePrice.value_counts() #：观察取值数量
 
 # df.SalePrice.value_counts(1) #：观察取值比例
-
-credit.isnull().sum()/float(len(credit)) # 缺失值
+## 3.4 重复值
+idsUnique = len(set(train.Id))
+idsTotal = train.shape[0]
+idsDupli = idsTotal - idsUnique
+print("There are " + str(idsDupli) + " duplicate IDs for " + str(idsTotal) + " total entries")
+## 3.5 缺失值
+credit.isnull().sum()/float(len(credit))
 
 df_value_ravel = df.values.ravel() 
-print (u'缺失值数量：',len(df_value_ravel[df_value_ravel==np.nan])) # 缺失值
+print (u'缺失值数量：',len(df_value_ravel[df_value_ravel==np.nan]))
+
+missing = train.isnull().sum()
+missing = missing[missing > 0]
+missing.sort_values(inplace=True)
+missing.plot.bar()
+
+total = df_train.isnull().sum().sort_values(ascending=False)
+percent = (df_train.isnull().sum()/df_train.isnull().count()).sort_values(ascending=False)
+missing_data = pd.concat([total, percent], axis=1, keys=['Total', 'Percent'])
+missing_data.head(20)
+
+df_train.isnull().sum().max()# final check
+
+## 3.6 异常值outlier
+from sklearn.preprocessing import StandardScaler
+
+saleprice_scaled = StandardScaler().fit_transform(df_train['SalePrice'][:,np.newaxis]);
+low_range = saleprice_scaled[saleprice_scaled[:,0].argsort()][:10]
+high_range= saleprice_scaled[saleprice_scaled[:,0].argsort()][-10:]
+print('outer range (low) of the distribution:')
+print(low_range)
+print('\nouter range (high) of the distribution:')
+print(high_range)
+# 4. columns处理
+# 数字变量和字符变量分开处理
+quantitative = [f for f in train.columns if train.dtypes[f] != 'object']
+quantitative.remove('SalePrice')
+quantitative.remove('Id')
+qualitative = [f for f in train.columns if train.dtypes[f] == 'object']
+
+# 5. 分布和偏态情况
+y = train['SalePrice']
+plt.figure(1); plt.title('Johnson SU')
+sns.distplot(y, kde=False, fit=st.johnsonsu)
+plt.figure(2); plt.title('Normal')
+sns.distplot(y, kde=False, fit=st.norm)
+plt.figure(3); plt.title('Log Normal')
+sns.distplot(y, kde=False, fit=st.lognorm)
+
+fig = plt.figure()
+res = stats.probplot(df_train['SalePrice'], plot=plt)# QQ图，查看分布是否一致的
+
+#skewness and kurtosis
+print("Skewness: %f" % df_train['SalePrice'].skew())
+print("Kurtosis: %f" % df_train['SalePrice'].kurt())
 
 
-# 作图
-sns.distplot(df['price'])
-# 多变量探索
+
+
+# 6. 相关变量探索
 # 散点图（数字变量）
 data = pd.concat([df['price'], df['area']], axis=1)
 data.plot.scatter(x='area', y='price', ylim=(0,40000));
+
+#pairplot
+sns.set()
+cols = ['SalePrice', 'OverallQual', 'GrLivArea', 'GarageCars', 'TotalBsmtSF', 'FullBath', 'YearBuilt']
+sns.pairplot(df_train[cols], size = 2.5)
+plt.show();
 
 # 箱图（分类变量）
 var = 'region'
@@ -98,3 +155,6 @@ sns.heatmap(corrmat, vmax=.8, square=True);
 k = 10 #number of variables for heatmap
 cols = corrmat.nlargest(k, 'SalePrice')['SalePrice'].index
 cm = np.corrcoef(df_train[cols].values.T)
+sns.set(font_scale=1.25)
+hm = sns.heatmap(cm, cbar=True, annot=True, square=True, fmt='.2f', annot_kws={'size': 10}, yticklabels=cols.values, xticklabels=cols.values)
+plt.show()
