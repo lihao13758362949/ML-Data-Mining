@@ -3,7 +3,6 @@
 参考资料：
 1. [pandas分批读取大数据集](https://blog.csdn.net/htbeker/article/details/86542412)
 2. [智慧海洋建设baseline——wbbhcb](https://github.com/wbbhcb/zhhyjs_baseline)
-3. [（回归问题）Comprehensive data exploration with Python](https://www.kaggle.com/pmarcelino/comprehensive-data-exploration-with-python)
 4. [（分类问题）Titanic Data Science Solutions](https://www.kaggle.com/startupsci/titanic-data-science-solutions)
 
 
