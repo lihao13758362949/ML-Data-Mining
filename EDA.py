@@ -68,6 +68,9 @@ idsUnique = len(set(train.Id))
 idsTotal = train.shape[0]
 idsDupli = idsTotal - idsUnique
 print("There are " + str(idsDupli) + " duplicate IDs for " + str(idsTotal) + " total entries")
+
+df.duplicated() 
+df.drop_duplicates()
 ## 3.5 缺失值
 credit.isnull().sum()/float(len(credit))
 
