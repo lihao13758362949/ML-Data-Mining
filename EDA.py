@@ -12,6 +12,14 @@ train = pd.read_csv('../input/train.csv')
 df=pd.read_excel(r'C:\Users\lihao\Desktop\学年论文\链家二手房房源信息精简.xlsx',header=0,names=['price','layout','floor','direction','fitup','area','type','region','look_7','look_30'])
 # 连接数据
 df = pd.concat([train.assign(is_train=1), test.assign(is_train=0)])
+
+# 读取arff文件
+from scipy.io import arff
+import pandas as pd 
+file_name='1year.arff'
+data,meta=arff.loadarff(file_name)
+df=pd.DataFrame(data)
+
 # 多文件读取
 def get_data(path, get_type=True):
     features = []
@@ -70,7 +78,6 @@ idsDupli = idsTotal - idsUnique
 print("There are " + str(idsDupli) + " duplicate IDs for " + str(idsTotal) + " total entries")
 
 df.duplicated() 
-df.drop_duplicates()
 ## 3.5 缺失值
 credit.isnull().sum()/float(len(credit))
 
@@ -90,15 +97,13 @@ missing_data.head(20)
 df_train.isnull().sum().max()# final check
 
 ## 3.6 异常值outlier
-from sklearn.preprocessing import StandardScaler
 
-saleprice_scaled = StandardScaler().fit_transform(df_train['SalePrice'][:,np.newaxis]);
-low_range = saleprice_scaled[saleprice_scaled[:,0].argsort()][:10]
-high_range= saleprice_scaled[saleprice_scaled[:,0].argsort()][-10:]
-print('outer range (low) of the distribution:')
-print(low_range)
-print('\nouter range (high) of the distribution:')
-print(high_range)
+# 箱图（分类变量）
+var = 'region'
+data = pd.concat([df['price'], df[var]], axis=1)
+f, ax = plt.subplots(figsize=(8, 6))
+fig = sns.boxplot(x=var, y="price", data=data)
+# fig.axis(ymin=0, ymax=800000);
 # 4. columns处理
 # 数字变量和字符变量分开处理
 quantitative = [f for f in train.columns if train.dtypes[f] != 'object']
