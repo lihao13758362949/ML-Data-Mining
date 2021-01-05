@@ -1,45 +1,42 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn import datasets, linear_model
-from sklearn.model_selection import train_test_split，cross_val_predict
+from sklearn import datasets,linear_model
+from sklearn.model_selection import train_test_split,cross_val_predict
 from sklearn.metrics import mean_squared_error, r2_score
 
 # 数据导入（这里以波士顿房价为例）
 loaded_data = datasets.load_boston() 
-x_data = loaded_data.data 
+X_data = loaded_data.data 
 y_data = loaded_data.target 
-print(shape(x_data))  # (506, 13)
-print(shape(y_data))  # (506,)
-print(x_data[:2, :])
-print(y_data[:2]) 
-
+print(X_data.shape)  # (506, 13)
+print(y_data.shape)  # (506,)
+X=pd.DataFrame(X_data)
+y=pd.DataFrame(y_data)
 
 # 模型训练、结果分析
-def LR_model_train(X,y,type=1,test_size=0.3,cv=10):
+def LR(X,y,type=1,test_size=0.3,cv=10,random_state=2021,plot=False):
       # 线性回归
       # type:1表示留出法hold-out,2表示交叉验证法,test_size和cv是他们的参数
       
-      model = linear_model.LinearRegression()
+      lr = linear_model.LinearRegression()
+        
       if type==1:
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size,random_state=2020)
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size,random_state=random_state)
+            lr.fit(X_train, y_train)
+            y_pred = lr.predict(X_test)
+            # 输出指标
+            print('Mean squared error: %.2f'
+                % mean_squared_error(y_test, y_pred))
+            print('Coefficient of determination: %.2f'
+                % r2_score(y_test, y_pred))# 此句等价于lr.score(X_test, y_test)
+        
       if type==2:
-            y_pred = cross_val_predict(model, X, y, cv=10)
-      print("Intercept value",model.intercept_) #截距
-      print(pd.DataFrame(list(zip(list(X_data.columns),model.coef_.flatten().tolist())),columns=["特征","系数"]))
-      
-      # 输出指标
-      print('Mean squared error: %.2f'
-            % mean_squared_error(y_test, y_pred))
-      print('Coefficient of determination: %.2f'
-            % r2_score(y_test, y_pred))# 此句等价于regr.score(X_test, y_test)
-      return predictions
+            y_pred = cross_val_predict(lr, X, y, cv=10)
+            
+      print("Intercept value",lr.intercept_) #截距
+      print(pd.DataFrame(list(zip(list(X.columns),lr.coef_.flatten().tolist())),columns=["特征","系数"]))
 
-      # Linear Regression
-      lr = LinearRegression()
-      lr.fit(X_train, y_train)
 
       # Look at predictions on training and validation set
       print("RMSE on Training set :", rmse_cv_train(lr).mean())
@@ -58,14 +55,20 @@ def LR_model_train(X,y,type=1,test_size=0.3,cv=10):
       plt.show()
 
       # Plot predictions
-      plt.scatter(y_train_pred, y_train, c = "blue", marker = "s", label = "Training data")
-      plt.scatter(y_test_pred, y_test, c = "lightgreen", marker = "s", label = "Validation data")
-      plt.title("Linear regression")
-      plt.xlabel("Predicted values")
-      plt.ylabel("Real values")
-      plt.legend(loc = "upper left")
-      plt.plot([10.5, 13.5], [10.5, 13.5], c = "red")
-      plt.show()
+      if plot==True:
+            plt.scatter(y_train_pred, y_train, c = "blue", marker = "s", label = "Training data")
+            plt.scatter(y_test_pred, y_test, c = "lightgreen", marker = "s", label = "Validation data")
+            plt.title("Linear regression")
+            plt.xlabel("Predicted values")
+            plt.ylabel("Real values")
+            plt.legend(loc = "upper left")
+            plt.plot([10.5, 13.5], [10.5, 13.5], c = "red")
+            plt.show()
+            
+            # 画拟合线
+            plt.scatter(X,y,color='blue')
+            plt.plot(X,lr.predict(X),color='red',linewidth=4)
+            plt.show()
 def Ridge_model_train(X,y,alpha=0.05,type=1,test_size=0.3,cv=10):
       # 岭回归 L2-penalty
       # alpha：超参数，惩罚项系数
