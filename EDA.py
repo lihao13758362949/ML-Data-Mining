@@ -75,14 +75,23 @@ df.describe(include='all') #：全部变量的一些描述信息。
 df.SalePrice.value_counts() #：观察取值数量
 
 # df.SalePrice.value_counts(1) #：观察取值比例
-## 3.4 重复值
+
+# 4. 单变量探索
+## 4.1 columns处理
+# 数字变量和字符变量分开处理
+quantitative = [f for f in train.columns if train.dtypes[f] != 'object']
+quantitative.remove('SalePrice')
+quantitative.remove('Id')
+qualitative = [f for f in train.columns if train.dtypes[f] == 'object']
+
+## 4.4 重复值
 idsUnique = len(set(train.Id))
 idsTotal = train.shape[0]
 idsDupli = idsTotal - idsUnique
 print("There are " + str(idsDupli) + " duplicate IDs for " + str(idsTotal) + " total entries")
 
 df.duplicated() 
-## 3.5 缺失值
+## 4.5 缺失值
 credit.isnull().sum()/float(len(credit))
 
 df_value_ravel = df.values.ravel() 
@@ -100,7 +109,7 @@ missing_data.head(20)
 
 df_train.isnull().sum().max()# final check
 
-## 3.6 异常值outlier
+## 4.6 异常值outlier
 
 # 箱图（分类变量）
 var = 'region'
@@ -108,14 +117,9 @@ data = pd.concat([df['price'], df[var]], axis=1)
 f, ax = plt.subplots(figsize=(8, 6))
 fig = sns.boxplot(x=var, y="price", data=data)
 # fig.axis(ymin=0, ymax=800000);
-# 4. columns处理
-# 数字变量和字符变量分开处理
-quantitative = [f for f in train.columns if train.dtypes[f] != 'object']
-quantitative.remove('SalePrice')
-quantitative.remove('Id')
-qualitative = [f for f in train.columns if train.dtypes[f] == 'object']
 
-# 5. 分布和偏态情况
+
+## 4.7. 分布和偏态情况
 y = train['SalePrice']
 plt.figure(1); plt.title('Johnson SU')
 sns.distplot(y, kde=False, fit=st.johnsonsu)
@@ -134,14 +138,19 @@ print("Kurtosis: %f" % df_train['SalePrice'].kurt())
 
 
 
-# 6. 相关变量探索
+# 5. 双变量探索
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+
+## 5.1 列表
+df_train[['Pclass', 'Survived']].groupby(['Pclass'], as_index=False).mean().sort_values(by='Survived', ascending=False)
+df_train[['Pclass', 'Survived']].groupby(['Pclass'], as_index=False).count().sort_values(by='Survived', ascending=False)
+## 5.2 作图
 def plot(X,y,X_cols,y_col,plot_type=scatter):
     #scatter:散点图，pairplot:sns.pairplot，box：箱图，hist：直方图，heatmap：相关分析，热度图，list:列表汇总
     if plot_type==scatter:
-        # 散点图（数字变量）
+        # 散点图（num+num）
         data = pd.concat([X, y], axis=1)
         data.plot.scatter(x=X_cols, y=y_col);
     if plot_type==pairplot:
@@ -151,7 +160,7 @@ def plot(X,y,X_cols,y_col,plot_type=scatter):
         sns.pairplot(data,x_vars=X_cols,y_vars=y_col)#参数size=2.5表示大小，aspect=0.8表示，kind='reg'添加拟合直线和95%置信区间
         plt.show();
     if plot_type=box:
-        # 箱图（分类变量）
+        # 箱图（num+clas）
         var = 'region'
         data = pd.concat([df[y_col], df[var]], axis=1)
         f, ax = plt.subplots(figsize=(8, 6))
@@ -159,7 +168,7 @@ def plot(X,y,X_cols,y_col,plot_type=scatter):
         # fig.axis(ymin=0, ymax=800000);
     if plot_type=hist:
         # 对比，直方图
-        g = sns.FacetGrid(train_df, col='Survived')
+        g = sns.FacetGrid(train_df, col='Survived') # row='Pclass', size=2.2, aspect=1.6
         g.map(plt.hist, 'Age', bins=20)
     if plot_type=heatmap:
         # 相关分析，热度图heatmaps1
