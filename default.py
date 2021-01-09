@@ -19,3 +19,5 @@ warnings.filterwarnings("ignore") # 过滤警告文字
 import matplotlib.pyplot as plt
 plt.rcParams['font.sans-serif']=['SimHei']
 plt.rcParams['axes.unicode_minus']=False # 在图片中显示中文
+
+plt.style.use('fivethirtyeight')
