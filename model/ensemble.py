@@ -158,6 +158,8 @@ for clf, label in zip([clf1, clf2, clf3, sclf],
 14. `.HistGradientBoostingRegressor(loss=’least_squares’, learning_rate=0.1, max_iter=100, max_leaf_nodes=31, max_depth=None, min_samples_leaf=20, l2_regularization=0.0, max_bins=256, scoring=None, validation_fraction=0.1, n_iter_no_change=None, tol=1e-07, verbose=0, random_state=None)`
 
 # RF随机森林
+## 随机森林的优点：防过拟合、抗噪声、无需规范化、速度快、
+## 随机森林的缺点：某些噪声过大的问题上会过拟合、对取值多的变量有偏好，因此属性权值不可信
 # `.RandomForestClassifier(n_estimators=’warn’, criterion=’gini’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=’auto’, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, bootstrap=True, oob_score=False, n_jobs=None, random_state=None, verbose=0, warm_start=False, class_weight=None)`
 # `.RandomForestRegressor(n_estimators=’warn’, criterion=’mse’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=’auto’, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, bootstrap=True, oob_score=False, n_jobs=None, random_state=None, verbose=0, warm_start=False)`
 from sklearn.ensemble import RandomForestClassifier
@@ -169,6 +171,7 @@ importances = clf.feature_importances_
 std = np.std([tree.feature_importances_ for tree in clf.estimators_],axis=0)
 #按照变量的重要性排序后的索引 
 indices = np.argsort(importances)[::-1]
+
 # 绘图过程
 import matplotlib.pyplot as plt
 plt.figure()
