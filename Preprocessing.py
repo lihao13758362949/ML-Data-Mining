@@ -17,6 +17,20 @@ df_train = df_train.drop(df_train.loc[df_train['Electrical'].isnull()].index)
 train_df=train_df[~train_df['order_detail_status'].isin([101])]# 删除101订单状态订单
 
 # 填充
+## 填充1
+from sklearn.impute import SimpleImputer    
+import numpy as np    
+# create an object and specify the required configuration    
+# imputing numerical feature values    
+imp_1 = SimpleImputer(missing_values= np.nan, strategy="mean")    # “mean”, “median”, “most_frequent”, and “constant”
+numerical_cols = list(data.select_dtypes(include = 'number').columns)    
+data[numerical_cols] = imp_1.fit_transform(data[numerical_cols])    
+#imputing categorical feature values    
+imp_2 = SimpleImputer(missing_values = np.nan, strategy="most_frequent")    
+categorical_cols = list(data.select_dtypes(include = 'object').columns)    
+data[categorical_cols] = imp_2.fit_transform(data[categorical_cols])
+
+## 填充2
 all_data = all_data.fillna(all_data.mean())
 # 根据业务实际情况填充。
 #统计量：众数、中位数、均值
