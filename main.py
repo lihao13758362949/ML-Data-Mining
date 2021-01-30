@@ -12,5 +12,5 @@ X_test = test[feature].values
 ## metrics 输出：metrics
 
 
-# 4. model #输入：splits,metrics,X_test
+# 4. model #输入：splits,metrics,X_test 输出：score（cv_score或）,res,模型（feature_importance，best_iteration）
 ## model_params
