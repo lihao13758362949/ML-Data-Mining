@@ -11,23 +11,27 @@ import scipy.stats as st
 import os
 import pandas as pd
 
-# train_path=''
-# test_path=''
-def get_data(path,data_type='csv',header=None):
+def get_data(path,data_type='csv',header=None,names=None):
     ## 注意path格式，可能要加r
     if data_type == 'csv':
-        df = pd.read_csv(path,header=header)
-    if data_type=='xlsx'
-        df=pd.read_excel(path,header=header,names=['price','layout','floor','direction','fitup','area','type','region','look_7','look_30'])
-    if data_type='arff'
+        df = pd.read_csv(path,header=header,names=names)
+    if data_type == 'xlsx':
+        df=pd.read_excel(path,header=header,names=names)
+    if data_type == 'arff':
         # 读取arff文件
         from scipy.io import arff
         data,meta=arff.loadarff(path)
         df=pd.DataFrame(data)
 
     return df
+
+# trn_path=''
+# test_path=''
+# header=0
+# names=[]
 df_train = get_data(trn_path)
 df_test = get_data(test_path)
+
 # 连接数据
 all_data = pd.concat([df_train.assign(is_train=1), df_test.assign(is_train=0)])
 # 多文件读取
