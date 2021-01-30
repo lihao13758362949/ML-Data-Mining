@@ -1,4 +1,4 @@
-# 集成学习 输入：splits,metrics,X_test
+# 集成学习 输入：splits,metrics,X_test 输出：score（cv_score或）,res,模型（feature_importance，best_iteration）
 
 from sklearn import datasets  
 from sklearn import model_selection  
