@@ -61,6 +61,10 @@ def get_data2(path, get_type=True):
         df['label'] = df['label'].map(label_dict)
     else:
         df = df.rename(columns={len(features[0])-1:'filename'})
+
+# 按照单车ID和时间进行排序
+bike_track = bike_track.sort_values(['BICYCLE_ID', 'LOCATING_TIME'])
+
 # 3.数据集基本信息（当前因变量为SalePrice）
 df.info()
 
