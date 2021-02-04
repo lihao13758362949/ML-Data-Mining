@@ -1,22 +1,45 @@
-# 数据探索性分析
+# 数据探索性分析 EDA_Base.py
 
 # 1.导入库
 import pandas as pd
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats as st
 
 # 2.读取数据
-import os
-import pandas as pd
+path = '../input/' # 文件目录，相对路径
+MAX_ROWS = 100000  # 文件读取行数
+types = {
+         'DRIVING_DIRECTION': np.uint16,
+         'OPERATING_STATUS': np.uint8,
+         'LONGITUDE': np.float32,
+         'LATITUDE': np.float32,
+         'GPS_SPEED': np.float16 
+        }
 
-def get_data(path,data_type='csv',header=None,names=None):
-    ## 注意path格式，可能要加r
+def get_data(path,data_type='csv',header=0,names=None,nrows=MAX_ROWS,dtype=types):
+    """
+    get_data函数作用：
+    读取数据
+    参考链接：https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html?highlight=read_csv
+    
+    参数：
+    path：读取文件的路径
+    data_type：读取文件的类型
+    header：指定哪一行作为列名，若为None则通过names指定，0为默认值，数字表示行数
+    names：指定列名，如['a1','a2']
+    nrows：指定要读取的行数
+    dtype：数据字段压缩的操作，将字段类型根据取值空间进行修改，压缩内存使用需求。
+    
+    例子：若file名为'taxiGps20190531.csv'
+    df = get_data(path+'taxiGps20190531.csv')
+    """
     if data_type == 'csv':
-        df = pd.read_csv(path,header=header,names=names)
+        df = pd.read_csv(path,header=header,names=names,nrows=MAX_ROWS)
     if data_type == 'xlsx':
-        df=pd.read_excel(path,header=header,names=names)
+        df=pd.read_excel(path,header=header,names=names,nrows=MAX_ROWS)
     if data_type == 'arff':
         # 读取arff文件
         from scipy.io import arff
@@ -25,12 +48,7 @@ def get_data(path,data_type='csv',header=None,names=None):
 
     return df
 
-# trn_path=''
-# test_path=''
-# header=0
-# names=[]
-df_train = get_data(trn_path)
-df_test = get_data(test_path)
+
 
 # 连接数据
 all_data = pd.concat([df_train.assign(is_train=1), df_test.assign(is_train=0)])
@@ -64,8 +82,14 @@ def get_data2(path, get_type=True):
 
 # 按照单车ID和时间进行排序
 bike_track = bike_track.sort_values(['BICYCLE_ID', 'LOCATING_TIME'])
+taxigps2019 = taxigps2019[taxigps2019.columns[::-1]]
+taxigps2019.sort_values(by=['CARNO','GPS_TIME'], inplace=True)
+taxigps2019.reset_index(inplace=True, drop=True)
 
-# 3.数据集基本信息（当前因变量为SalePrice）
+#修改数据类型
+df['xxx'] = df['xxx'].astype(np.int8)
+
+# 3.数据集基本信息
 df.info()
 
 columns = df.columns.values.tolist() #获取所有的变量名
@@ -82,7 +106,7 @@ df.describe(include='all') #：全部变量的一些描述信息。
 
 df.SalePrice.value_counts() #：观察取值数量
 
-# df.SalePrice.value_counts(1) #：观察取值比例
+df.SalePrice.value_counts(1) #：观察取值比例
 
 # 4. 单变量探索
 ## 4.1 columns处理
@@ -92,8 +116,8 @@ quantitative.remove('SalePrice')
 quantitative.remove('Id')
 qualitative = [f for f in train.columns if train.dtypes[f] == 'object']
 
-## 4.4 重复值
-idsUnique = len(set(train.Id))
+## 4.4 重复值问题
+idsUnique = len(set(train.Id)) # train['Id'].nunique()
 idsTotal = train.shape[0]
 idsDupli = idsTotal - idsUnique
 print("There are " + str(idsDupli) + " duplicate IDs for " + str(idsTotal) + " total entries")
