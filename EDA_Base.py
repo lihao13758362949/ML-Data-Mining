@@ -175,9 +175,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-## 5.1 列表
+## 5.1 列表groupby玩法
 df_train[['Pclass', 'Survived']].groupby(['Pclass'], as_index=False).mean().sort_values(by='Survived', ascending=False)
-df_train[['Pclass', 'Survived']].groupby(['Pclass'], as_index=False).count().sort_values(by='Survived', ascending=False)
+#count/sum/mean/median/std/var/min/max/first/last
 ## 5.2 作图
 def plot(X,y,X_cols,y_col,plot_type=scatter):
     #scatter:散点图，pairplot:sns.pairplot，box：箱图，hist：直方图，heatmap：相关分析，热度图，list:列表汇总
@@ -218,5 +218,54 @@ def plot(X,y,X_cols,y_col,plot_type=scatter):
         # 列表汇总（分类变量+数字变量）
         train_df[['Pclass', 'Survived']].groupby(['Pclass'], as_index=False).mean().sort_values(by='Survived', ascending=False)
 
+## 5.3 动图制作
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
+import matplotlib.pyplot as plt
+from matplotlib import animation
+
+def barlist(n): 
+    taxiorder2019 = pd.read_csv(paths[n], nrows=None,
+                                   dtype = {
+                                       'GETON_LONGITUDE': np.float32,
+                                       'GETON_LATITUDE': np.float32,
+                                       'GETOFF_LONGITUDE': np.float32,
+                                       'GETOFF_LATITUDE': np.float32,
+                                       'PASS_MILE': np.float16,
+                                       'NOPASS_MILE': np.float16,
+                                       'WAITING_TIME': np.float16
+                                   })
+
+    taxiorder2019['GETON_DATE'] = pd.to_datetime(taxiorder2019['GETON_DATE'])
+    taxiorder2019['GETON_Hour'] = taxiorder2019['GETON_DATE'].dt.hour
+
+    return taxiorder2019.groupby(['GETON_Hour'])['PASS_MILE'].mean().values
+
+fig=plt.figure()
+
+paths = glob.glob('../input/taxiOrder20190*.csv')
+paths.sort()
+n = len(paths) #Number of frames
+x = range(24)
+barcollection = plt.bar(x,barlist(0))
+plt.ylim(0, 8)
+
+def animate(i):
+    print(i)
+    y=barlist(i+1)
+    for idx, b in enumerate(barcollection):
+        b.set_height(y[idx])
+    plt.ylim(0, 8)
+
+    print(i+1)
+    plt.title(paths[i+1].split('/')[-1])
+    plt.ylabel('PASS_MILE / KM')
+    plt.xlabel('Hour')
+
+anim=animation.FuncAnimation(fig,animate,repeat=False,blit=False,frames=n-1,
+                             interval=500)
+
+anim.save('order.gif', dpi=150)
 
