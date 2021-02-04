@@ -40,3 +40,9 @@ import folium
 m = folium.Map(location=[24.482426, 118.157606], zoom_start=12)
 my_PolyLine=folium.PolyLine(locations=taxigps2019[taxigps2019['CARNO'] == '0006d282be70d06881a7513b69fcaa60'][['LATITUDE', 'LONGITUDE']].iloc[:50].values,weight=5)
 m.add_children(my_PolyLine)
+
+# geohash库：可以把经纬度合成一个区域的编码，表明在这区域里，有隐私保护的作用
+taxiorder2019['geohash'] = taxiorder2019.apply(lambda x: geohash.encode(x['GETON_LATITUDE'], x['GETON_LONGITUDE'], precision=8), axis=1)
+for idx in taxiorder2019['geohash'].value_counts().iloc[1:11].index:
+    df = taxiorder2019[taxiorder2019['geohash'] == idx]
+    print(idx, df['GETON_LONGITUDE'].mean(), df['GETON_LATITUDE'].mean())
