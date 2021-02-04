@@ -52,7 +52,8 @@ talExposureLog = totalExposureLog.loc[(totalExposureLog.pctr<=1000)]
 
 df_train.sort_values(by = 'GrLivArea', ascending = False)[:2]
 df_train = df_train.drop(df_train[df_train['Id'] == 1299].index)
-
+# 调整到一个范围内
+df['x'] = np.clip(df['x'].values, 0, 150) # 低于0的会变成0，高于150的会变成150
 # 文本数据的清洗
 	#在比赛当中，如果数据包含文本，往往需要进行大量的数据清洗工作。如去除HTML 标签，分词，拼写纠正, 同义词替换，去除停词，抽词干，数字和单位格式统一等
 	
