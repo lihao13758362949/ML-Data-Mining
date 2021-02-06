@@ -9,6 +9,11 @@ from sklearn import preprocessing
 
 
 # 2. 缺失值处理
+# 不处理（针对类似 XGBoost 等树模型）；
+# 删除（缺失数据太多）；
+# 插值补全，包括均值/中位数/众数/建模预测/多重插补/压缩感知补全/矩阵补全等；
+# 分箱，缺失值一个箱；
+
 # 删除变量
 df_train = df_train.drop((missing_data[missing_data['Total'] > 1]).index,1)
 # 删除样本
@@ -47,7 +52,8 @@ all_data = all_data.fillna(all_data.mean())
 #偏正态分布，使用均值代替，可以保持数据的均值；偏长尾分布，使用中值代替，避免受 outlier 的影响
 
 # 3.异常值和歧义值处理
-# 删除
+# 通过箱线图（或 3-Sigma）分析删除异常值；
+## 删除
 talExposureLog = totalExposureLog.loc[(totalExposureLog.pctr<=1000)]
 
 df_train.sort_values(by = 'GrLivArea', ascending = False)[:2]
@@ -71,7 +77,55 @@ for dataset in combine:
     dataset['Title'] = dataset['Title'].replace('Mme', 'Mrs')
     
 train_df[['Title', 'Survived']].groupby(['Title'], as_index=False).mean()
-# 数据标准化
+
+## 这里我包装了一个异常值处理的代码，可以随便调用。
+def outliers_proc(data, col_name, scale=3):
+    """
+    用于清洗异常值，默认用 box_plot（scale=3）进行清洗
+    :param data: 接收 pandas 数据格式
+    :param col_name: pandas 列名
+    :param scale: 尺度
+    :return:
+    """
+
+    def box_plot_outliers(data_ser, box_scale):
+        """
+        利用箱线图去除异常值
+        :param data_ser: 接收 pandas.Series 数据格式
+        :param box_scale: 箱线图尺度，
+        :return:
+        """
+        iqr = box_scale * (data_ser.quantile(0.75) - data_ser.quantile(0.25))
+        val_low = data_ser.quantile(0.25) - iqr
+        val_up = data_ser.quantile(0.75) + iqr
+        rule_low = (data_ser < val_low)
+        rule_up = (data_ser > val_up)
+        return (rule_low, rule_up), (val_low, val_up)
+
+    data_n = data.copy()
+    data_series = data_n[col_name]
+    rule, value = box_plot_outliers(data_series, box_scale=scale)
+    index = np.arange(data_series.shape[0])[rule[0] | rule[1]]
+    print("Delete number is: {}".format(len(index)))
+    data_n = data_n.drop(index)
+    data_n.reset_index(drop=True, inplace=True)
+    print("Now column number is: {}".format(data_n.shape[0]))
+    index_low = np.arange(data_series.shape[0])[rule[0]]
+    outliers = data_series.iloc[index_low]
+    print("Description of data less than the lower bound is:")
+    print(pd.Series(outliers).describe())
+    index_up = np.arange(data_series.shape[0])[rule[1]]
+    outliers = data_series.iloc[index_up]
+    print("Description of data larger than the upper bound is:")
+    print(pd.Series(outliers).describe())
+    
+    fig, ax = plt.subplots(1, 2, figsize=(10, 7))
+    sns.boxplot(y=data[col_name], data=data, palette="Set1", ax=ax[0])
+    sns.boxplot(y=data_n[col_name], data=data_n, palette="Set1", ax=ax[1])
+    return data_n
+train = outliers_proc(train, 'power', scale=3)
+
+# 4 数据标准化
 #标准正态分布标准化
 Scaler=StandardScaler(copy=True, with_mean=True, with_std=True)
 df[column]=StandardScaler().fit_transform(df[column][:,np.newaxis])
@@ -99,7 +153,7 @@ print(high_range)
 
 
 
-# 4.编码
+# 5.编码
 train = train.replace({"MSSubClass" : {20 : "SC20", 30 : "SC30", 40 : "SC40", 45 : "SC45", 
                                        50 : "SC50", 60 : "SC60", 70 : "SC70", 75 : "SC75", 
                                        80 : "SC80", 85 : "SC85", 90 : "SC90", 120 : "SC120", 
@@ -139,9 +193,13 @@ df_train = pd.get_dummies(df_train)
 #对于字符型的特征，要在编码后转换数据类型pandas.DataFrame.astype
 
 # 连续变量离散化（分箱）
+# 等频分桶；
+# 等距分桶；
+# Best-KS 分桶（类似利用基尼指数进行二分类）；
+# 卡方分桶；
 连续特征离散化pandas.cut，然后通过pandas.Series.value_counts观察切分点，再将对应bins或者说区间的连续值通过pandas.DataFrame.replace或pandas.DataFrame.loc到离散点0,1,2,…后再进行编码。
 
-# 5. 不平衡数据处理
+# 6. 不平衡数据处理
 # 过采样
 from imblearn.over_sampling import RandomOverSampler
 X = df.iloc[:,:-1].values
@@ -155,7 +213,9 @@ smo = SMOTE(random_state=42)
 X_smo, y_smo = smo.fit_sample(X_train, y_train)
 
 
-# 6. 偏态分布处理
+# 7. 偏态分布处理
+# BOX-COX 转换（处理有偏分布）；
+# 长尾截断；
 test_normality = lambda x: stats.shapiro(x.fillna(0))[1] < 0.01
 normal = pd.DataFrame(train[quantitative])
 normal = normal.apply(test_normality)
