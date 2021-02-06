@@ -19,7 +19,7 @@ types = {
          'GPS_SPEED': np.float16 
         }
 
-def get_data(path,data_type='csv',header=0,names=None,nrows=MAX_ROWS,dtype=types):
+def get_data(path,data_type='csv',header=0,names=None,nrows=MAX_ROWS,dtype=types,sep = ' '):
     """
     get_data函数作用：
     读取数据
@@ -32,6 +32,7 @@ def get_data(path,data_type='csv',header=0,names=None,nrows=MAX_ROWS,dtype=types
     names：指定列名，如['a1','a2']
     nrows：指定要读取的行数
     dtype：数据字段压缩的操作，将字段类型根据取值空间进行修改，压缩内存使用需求。
+    sep：分隔符
     
     例子：若file名为'taxiGps20190531.csv'
     df = get_data(path+'taxiGps20190531.csv')
@@ -51,7 +52,7 @@ def get_data(path,data_type='csv',header=0,names=None,nrows=MAX_ROWS,dtype=types
 
 
 # 连接数据
-all_data = pd.concat([df_train.assign(is_train=1), df_test.assign(is_train=0)])
+all_data = pd.concat([df_train.assign(is_train=1), df_test.assign(is_train=0)]) #把训练集和测试集一起处理可以减少代码量
 # 多文件读取
 def get_data2(path, get_type=True):
     features = []
@@ -90,6 +91,11 @@ taxigps2019.reset_index(inplace=True, drop=True)
 df['xxx'] = df['xxx'].astype(np.int8)
 
 # 3.数据集基本信息
+## 一键生成EDA
+import pandas_profiling
+pfr = pandas_profiling.ProfileReport(Train_data)
+pfr.to_file("./example.html")
+
 df.info()
 
 columns = df.columns.values.tolist() #获取所有的变量名
@@ -105,16 +111,20 @@ df.describe(include=['O']) #：分类变量的一些描述信息。
 df.describe(include='all') #：全部变量的一些描述信息。
 
 df.SalePrice.value_counts() #：观察取值数量
-
 df.SalePrice.value_counts(1) #：观察取值比例
+# 特征nunique分布
+for cat_fea in categorical_features:
+    print(cat_fea + "的特征分布如下：")
+    print("{}特征有个{}不同的值".format(cat_fea, Train_data[cat_fea].nunique()))
+    print(Train_data[cat_fea].value_counts())
 
 # 4. 单变量探索
 ## 4.1 columns处理
 # 数字变量和字符变量分开处理
-quantitative = [f for f in train.columns if train.dtypes[f] != 'object']
-quantitative.remove('SalePrice')
-quantitative.remove('Id')
-qualitative = [f for f in train.columns if train.dtypes[f] == 'object']
+# Y_train = Train_data['price']
+numeric_features = Train_data.select_dtypes(include=[np.number])
+# numeric_features.remove('price')
+categorical_features = Train_data.select_dtypes(include=[np.object])
 
 ## 4.4 重复值问题
 idsUnique = len(set(train.Id)) # train['Id'].nunique()
@@ -124,6 +134,9 @@ print("There are " + str(idsDupli) + " duplicate IDs for " + str(idsTotal) + " t
 
 df.duplicated() 
 ## 4.5 缺失值
+### 需要注意的是有些缺失值可能已经被处理过，可以用下条语句进行替换
+Train_data['notRepairedDamage'].replace('-', np.nan, inplace=True)
+
 credit.isnull().sum()/float(len(credit))
 
 df_value_ravel = df.values.ravel() 
@@ -163,14 +176,22 @@ sns.distplot(y, kde=False, fit=st.lognorm)
 fig = plt.figure()
 res = stats.probplot(df_train['SalePrice'], plot=plt)# QQ图，查看分布是否一致的
 
-#skewness and kurtosis
-print("Skewness: %f" % df_train['SalePrice'].skew())
-print("Kurtosis: %f" % df_train['SalePrice'].kurt())
+
+### 查看几个特征的偏度和峰值
+for col in numeric_features:
+    print('{:15}'.format(col), 
+          'Skewness: {:05.2f}'.format(Train_data[col].skew()) , 
+          '   ' ,
+          'Kurtosis: {:06.2f}'.format(Train_data[col].kurt())  
+         )
 
 
+## 4.8 查看具体频数直方图
+plt.hist(Train_data['price'], orientation = 'vertical',histtype = 'bar', color ='red')
+plt.show()
 
 
-# 5. 双变量探索
+# 5. 多变量探索
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -178,7 +199,13 @@ import pandas as pd
 ## 5.1 列表groupby玩法
 df_train[['Pclass', 'Survived']].groupby(['Pclass'], as_index=False).mean().sort_values(by='Survived', ascending=False)
 #count/sum/mean/median/std/var/min/max/first/last
-## 5.2 作图
+
+## 5.2 相关性分析
+price_numeric = Train_data[numeric_features]
+correlation = price_numeric.corr()
+print(correlation['price'].sort_values(ascending = False),'\n')
+
+## 5.5 作图
 def plot(X,y,X_cols,y_col,plot_type=scatter):
     #scatter:散点图，pairplot:sns.pairplot，box：箱图，hist：直方图，heatmap：相关分析，热度图，list:列表汇总
     if plot_type==scatter:
@@ -188,8 +215,14 @@ def plot(X,y,X_cols,y_col,plot_type=scatter):
     if plot_type==pairplot:
         #sns.pairplot
         sns.set()
-        data = pd.concat([X, y], axis=1)
-        sns.pairplot(data,x_vars=X_cols,y_vars=y_col)#参数size=2.5表示大小，aspect=0.8表示，kind='reg'添加拟合直线和95%置信区间
+        columns = ['price', 'v_12', 'v_8' , 'v_0', 'power', 'v_5',  'v_2', 'v_6', 'v_1', 'v_14']
+        sns.pairplot(Train_data[columns],size = 2 ,kind ='scatter',diag_kind='kde')
+        """
+        参数：
+        size=2.5表示大小，
+        aspect=0.8表示，
+        kind='reg'添加拟合直线和95%置信区间 'scatter'表示散点图
+        """
         plt.show();
     if plot_type=box:
         # 箱图（num+clas）
