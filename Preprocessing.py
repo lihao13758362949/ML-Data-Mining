@@ -156,51 +156,7 @@ print(high_range)
 
 
 
-# 5.<编码>
-train = train.replace({"MSSubClass" : {20 : "SC20", 30 : "SC30", 40 : "SC40", 45 : "SC45", 
-                                       50 : "SC50", 60 : "SC60", 70 : "SC70", 75 : "SC75", 
-                                       80 : "SC80", 85 : "SC85", 90 : "SC90", 120 : "SC120", 
-                                       150 : "SC150", 160 : "SC160", 180 : "SC180", 190 : "SC190"},
-                       "MoSold" : {1 : "Jan", 2 : "Feb", 3 : "Mar", 4 : "Apr", 5 : "May", 6 : "Jun",
-                                   7 : "Jul", 8 : "Aug", 9 : "Sep", 10 : "Oct", 11 : "Nov", 12 : "Dec"}
-                      })
 
-
-title_mapping = {"Mr": 1, "Miss": 2, "Mrs": 3, "Master": 4, "Rare": 5} # 手动编码
-dataset['Title'].map(title_mapping)
-col_dicts = {}
-cols = ['checking_balance','credit_history', 'purpose', 'savings_balance', 'employment_length', 'personal_status', 
-        'other_debtors','property','installment_plan','housing','job','telephone','foreign_worker']
-col_dicts = {'checking_balance': {'1 - 200 DM': 2,
-  '< 0 DM': 1,
-  '> 200 DM': 3,
-  'unknown': 0},
- 'credit_history': {'critical': 0,
-  'delayed': 2,
-  'fully repaid': 3,
-  'fully repaid this bank': 4,
-  'repaid': 1}}
-for col in cols:
-    credit[col] = credit[col].map(col_dicts[col])
-    
-# credit.head(9)
-
-
-
-OneHotEncoder(n_values=None, categorical_features=None, categories=None, drop=None, sparse=True, dtype=<class ‘numpy.float64’>, handle_unknown=’error’)# 热编码，若有n个类，则生成n个特征，其中一个是1其余是0.
-# `sparse`：默认为True表示用稀疏矩阵表示，一般使用`.toarray()`转换到False，即数组。
-OrdinalEncoder(categories=’auto’, dtype=<class ‘numpy.float64’>)# 序数编码
-LabelEncoder().fit_transform(data[feature].astype(np.str)
-df_train = pd.get_dummies(df_train)
-#对于频数较少的那些分类变量可以归类到‘其他’pandas.DataFrame.replace后再进行编码。
-#对于字符型的特征，要在编码后转换数据类型pandas.DataFrame.astype
-
-# <连续变量离散化>（分箱）
-# 等频分桶；
-# 等距分桶；
-# Best-KS 分桶（类似利用基尼指数进行二分类）；
-# 卡方分桶；
-连续特征离散化pandas.cut，然后通过pandas.Series.value_counts观察切分点，再将对应bins或者说区间的连续值通过pandas.DataFrame.replace或pandas.DataFrame.loc到离散点0,1,2,…后再进行编码。
 
 # 6  <不平衡数据处理>
 # <过采样>
