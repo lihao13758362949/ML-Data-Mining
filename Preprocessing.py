@@ -1,14 +1,17 @@
-# 数据预处理
+# <数据预处理> 输入：train,test 输出：train_pro,test_pro
+
+# <连接数据>
+all_data = pd.concat([train.assign(is_train=1), test.assign(is_train=0)]) #把训练集和测试集一起处理可以减少代码量
 
 from sklearn import preprocessing
 #from sklearn.preprocessing import *
-# 1. 删除重复数据
+# 1. <删除重复数据>
 .drop_duplicates(subset=,keep=) # 删除重复数据
 # subset：指出需要删除重复数据的列。
 # keep：保留重复的哪一个数据，last,first,False，false表示删除所有重复数据。
 
 
-# 2. 缺失值处理
+# 2. <缺失值处理>
 # 不处理（针对类似 XGBoost 等树模型）；
 # 删除（缺失数据太多）；
 # 插值补全，包括均值/中位数/众数/建模预测/多重插补/压缩感知补全/矩阵补全等；
@@ -51,7 +54,7 @@ all_data = all_data.fillna(all_data.mean())
 
 #偏正态分布，使用均值代替，可以保持数据的均值；偏长尾分布，使用中值代替，避免受 outlier 的影响
 
-# 3.异常值和歧义值处理
+# 3.<异常值和歧义值处理>
 # 通过箱线图（或 3-Sigma）分析删除异常值；
 ## 删除
 talExposureLog = totalExposureLog.loc[(totalExposureLog.pctr<=1000)]
@@ -125,7 +128,7 @@ def outliers_proc(data, col_name, scale=3):
     return data_n
 train = outliers_proc(train, 'power', scale=3)
 
-# 4 数据标准化
+# 4 <数据标准化>
 #标准正态分布标准化
 Scaler=StandardScaler(copy=True, with_mean=True, with_std=True)
 df[column]=StandardScaler().fit_transform(df[column][:,np.newaxis])
@@ -153,7 +156,7 @@ print(high_range)
 
 
 
-# 5.编码
+# 5.<编码>
 train = train.replace({"MSSubClass" : {20 : "SC20", 30 : "SC30", 40 : "SC40", 45 : "SC45", 
                                        50 : "SC50", 60 : "SC60", 70 : "SC70", 75 : "SC75", 
                                        80 : "SC80", 85 : "SC85", 90 : "SC90", 120 : "SC120", 
@@ -192,28 +195,27 @@ df_train = pd.get_dummies(df_train)
 #对于频数较少的那些分类变量可以归类到‘其他’pandas.DataFrame.replace后再进行编码。
 #对于字符型的特征，要在编码后转换数据类型pandas.DataFrame.astype
 
-# 连续变量离散化（分箱）
+# <连续变量离散化>（分箱）
 # 等频分桶；
 # 等距分桶；
 # Best-KS 分桶（类似利用基尼指数进行二分类）；
 # 卡方分桶；
 连续特征离散化pandas.cut，然后通过pandas.Series.value_counts观察切分点，再将对应bins或者说区间的连续值通过pandas.DataFrame.replace或pandas.DataFrame.loc到离散点0,1,2,…后再进行编码。
 
-# 6. 不平衡数据处理
-# 过采样
+# 6  <不平衡数据处理>
+# <过采样>
 from imblearn.over_sampling import RandomOverSampler
 X = df.iloc[:,:-1].values
 y = df['quality'].values
 ros = RandomOverSampler()
 X, y = ros.fit_sample(X, y)
 			     
-from imblearn.over_sampling import SMOTE			     
-# 定义SMOTE模型，random_state相当于随机数种子的作用
+from imblearn.over_sampling import SMOTE			
 smo = SMOTE(random_state=42)
 X_smo, y_smo = smo.fit_sample(X_train, y_train)
 
 
-# 7. 偏态分布处理
+# 7. <偏态分布处理>
 # BOX-COX 转换（处理有偏分布）；
 # 长尾截断；
 test_normality = lambda x: stats.shapiro(x.fillna(0))[1] < 0.01
@@ -222,3 +224,31 @@ normal = normal.apply(test_normality)
 print(not normal.any())
 			     
 df_train['SalePrice'] = np.log(df_train['SalePrice'])# 对数转换
+			     
+			     
+
+  
+			     
+			     
+			     
+			     
+# 8 <时间特征处理>
+# >.to_datetime处理后切片成年、周、日、小时等新特征。然后可以用.dt.days/years等来调用，如
+df['create_order_time'] = pd.to_datetime(df['create_order_time'])
+df['date'] = df['create_order_time'].dt.date
+df['day'] = df['create_order_time'].dt.day
+df['hour'] = df['create_order_time'].dt.hour
+
+							 
+							 
+# 9 <最终输出>
+all_data[all_data['is_train']==1].to_csv('train_pro.csv', index=0)
+all_data[all_data['is_train']==0].to_csv('test_pro.csv', index=0)
+							 
+							 
+							 
+							 
+							 
+							 
+							 
+			     
