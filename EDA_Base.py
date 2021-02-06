@@ -51,8 +51,7 @@ def get_data(path,data_type='csv',header=0,names=None,nrows=MAX_ROWS,dtype=types
 
 
 
-# 连接数据
-all_data = pd.concat([df_train.assign(is_train=1), df_test.assign(is_train=0)]) #把训练集和测试集一起处理可以减少代码量
+
 # 多文件读取
 def get_data2(path, get_type=True):
     features = []
