@@ -1,8 +1,8 @@
-# 1 EDA 输出train,test
+# 1 EDA 输入：文件 输出：train,test
 
-# 2 数据预处理 输入：train,test 输出：train,test
-
-# 3. model前准备 输入：train,test
+# 2 数据预处理 输入：train,test 输出：train_pro,test_pro
+# 3 特征工程 输入：train_pro,test_pro 输出：train_final,test_final
+# 4. model前准备 输入：train_pro,test_pro
 feature = [x for x in train.columns if x not in ['187']]
 
 y_train = train['187']
@@ -12,5 +12,5 @@ X_test = test[feature].values
 ## metrics 输出：metrics
 
 
-# 4. model #输入：splits,metrics,X_test 输出：score（cv_score或）,res,模型（feature_importance，best_iteration）
+# 5. model #输入：splits,metrics,X_test 输出：score（cv_score或）,res,模型（feature_importance，best_iteration）
 ## model_params
