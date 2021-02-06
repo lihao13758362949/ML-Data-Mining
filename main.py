@@ -1,8 +1,8 @@
 # 1 EDA 输入：文件 输出：train,test
 
-# 2 数据预处理 输入：train,test 输出：train_pro,test_pro
-# 3 特征工程 输入：train_pro,test_pro 输出：train_final,test_final
-# 4. model前准备 输入：train_pro,test_pro
+# 2 数据预处理 输入：train,test 输出：train_pro.csv,test_pro.csv
+# 3 特征工程 输入：train_pro.csv,test_pro.csv 输出：train_final.csv,test_final.csv或 train_for_tree.csv,test_for_tree.csv,train_for_lr.csv
+# 4. model前准备 输入：train_final.csv,test_final.csv
 feature = [x for x in train.columns if x not in ['187']]
 
 y_train = train['187']
