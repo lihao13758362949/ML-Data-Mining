@@ -29,7 +29,9 @@ def metric(y_true,y_pred,type=reg):
         precision_score(y_true, y_pred, labels=None, pos_label=1, average=’binary’, sample_weight=None)#（查准率）精确率tp/（tp+fp），直观地说是分类器不将负样本标记为正样本的能力。
         f1_score(y_true, y_pred, labels=None, pos_label=1, average=’binary’, sample_weight=None)#F1实际上是精确率和召回率的调和平均。
         # average：可指定micro和macro
-
+        
+        #macro-recall/p/f1是先计算再平均，而micro-recall/p/f1是先平均再计算
+        
         log_loss(y_true, y_pred, eps=1e-15, normalize=True, sample_weight=None, labels=None)#也叫做逻辑损失或交叉熵损失
         # average_precision_score
         # brier_score_loss
