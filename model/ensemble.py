@@ -13,8 +13,8 @@ from sklearn.ensemble import VotingClassifier
 import numpy as np
 
 
-
-# <Voting> 简单投票法
+# 1 <简单加权融合>
+# 1.1 <Voting> 简单投票法
 # 载入数据集
 iris = datasets.load_iris()  
 # 只要第1,2列的特征
@@ -39,7 +39,7 @@ for clf, label in zip([clf1, clf2, clf3, sclf],
   
   
   
-# <简单的平均>
+# 1.2 <简单的平均>
 class AveragingModels(BaseEstimator, RegressorMixin, TransformerMixin):
     def __init__(self, models):
         self.models = models
@@ -60,51 +60,20 @@ class AveragingModels(BaseEstimator, RegressorMixin, TransformerMixin):
             model.predict(X) for model in self.models_
         ])
         return np.mean(predictions, axis=1)
+      
+def Weighted_method(test_pre1,test_pre2,test_pre3,w=[1/3,1/3,1/3]):
+    Weighted_result = w[0]*pd.Series(test_pre1)+w[1]*pd.Series(test_pre2)+w[2]*pd.Series(test_pre3)
+    return Weighted_result        
+        
+# 2 <排序融合(Rank averaging)，log融合> 
         
         
-        
-        
-        
-# <用基学习器的预测结果作为输入训练二级学习器>
-class StackingAveragedModels(BaseEstimator, RegressorMixin, TransformerMixin):
-    def __init__(self, base_models, meta_model, n_folds=5):
-        self.base_models = base_models
-        self.meta_model = meta_model
-        self.n_folds = n_folds
-   
-    # We again fit the data on clones of the original models
-    def fit(self, X, y):
-        self.base_models_ = [list() for x in self.base_models]
-        self.meta_model_ = clone(self.meta_model)
-        kfold = KFold(n_splits=self.n_folds, shuffle=True, random_state=156)
-        
-        # Train cloned base models then create out-of-fold predictions
-        # that are needed to train the cloned meta-model
-        out_of_fold_predictions = np.zeros((X.shape[0], len(self.base_models)))
-        for i, model in enumerate(self.base_models):
-            for train_index, holdout_index in kfold.split(X, y):
-                instance = clone(model)
-                self.base_models_[i].append(instance)
-                instance.fit(X[train_index], y[train_index])
-                y_pred = instance.predict(X[holdout_index])
-                out_of_fold_predictions[holdout_index, i] = y_pred
-                
-        # Now train the cloned  meta-model using the out-of-fold predictions as new feature
-        self.meta_model_.fit(out_of_fold_predictions, y)
-        return self
-   
-    #Do the predictions of all base models on the test data and use the averaged predictions as 
-    #meta-features for the final prediction which is done by the meta-model
-    def predict(self, X):
-        meta_features = np.column_stack([
-            np.column_stack([model.predict(X) for model in base_models]).mean(axis=1)
-            for base_models in self.base_models_ ])
-        return self.meta_model_.predict(meta_features)
+
       
       
-# 1 <Boosting>
+# 3 <Boosting>
 # >能够降低模型的bias，迭代地训练 Base Model，每次根据上一个迭代中预测错误的情况修改训练样本的权重。也即 Gradient Boosting 的原理。比 Bagging 效果好，但更容易 Overfit。
-## 1.1 <AdaBoost>
+## 3.1 <AdaBoost>
 # >提高前一轮弱分类器错误分类样本的权值，降低被正确分类样本的权值。
 # >加权投票法组合分类器
 AdaBoostRegressor(base_estimator=None, n_estimators=50, learning_rate=1.0, loss=’linear’, random_state=None)
@@ -114,20 +83,24 @@ n_estimators：基学习器数量
 base_estimator：基学习器类型，默认`.tree.DecisionTreeRegressor(max_depth=3)`
 '''
 
-## 1.2 <boosting tree>（提升树）
+## 3.2 <boosting tree>（提升树）
 # >提升树算法（向前分布算法，逐渐减少残差） 
 # >注：提升树算法仅在损失函数为平方误差损失函数时适用
 
 
 
-## 1.3 <Gradient Boosting Decision Tree> （GBDT，梯度提升树）
+## 3.3 <Gradient Boosting Decision Tree> （GBDT，梯度提升树）
 # >一般化的提升树算法
 GradientBoostingClassifier(loss=’deviance’, learning_rate=0.1, n_estimators=100, subsample=1.0, criterion=’friedman_mse’, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_depth=3, min_impurity_decrease=0.0, min_impurity_split=None, init=None, random_state=None, max_features=None, verbose=0, max_leaf_nodes=None, warm_start=False, presort=’auto’, validation_fraction=0.1, n_iter_no_change=None, tol=0.0001)
 GradientBoostingRegressor(loss=’ls’, learning_rate=0.1, n_estimators=100, subsample=1.0, criterion=’friedman_mse’, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_depth=3, min_impurity_decrease=0.0, min_impurity_split=None, init=None, random_state=None, max_features=None, alpha=0.9, verbose=0, max_leaf_nodes=None, warm_start=False, presort=’auto’, validation_fraction=0.1, n_iter_no_change=None, tol=0.0001)
 
-## 1.4 <XGBoost>
-
-## 1.5 <LightGBM>
+## 3.4 <XGBoost>
+def build_model_xgb(x_train,y_train):
+    model = xgb.XGBRegressor(n_estimators=150, learning_rate=0.1, gamma=0, subsample=0.8,\
+        colsample_bytree=0.9, max_depth=7) #, objective ='reg:squarederror'
+    model.fit(x_train, y_train)
+    return model
+## 3.5 <LightGBM>
 import numpy as np
 import pandas as pd
 import lightgbm as lgb
@@ -179,7 +152,14 @@ for idx,(train_idx,val_idx) in enumerate(splits):
     
 print('offline mean ACC score:',np.mean(cv_score))
     
-    
+def build_model_lgb(x_train,y_train):
+    estimator = lgb.LGBMRegressor(num_leaves=127,n_estimators = 150)
+    param_grid = {
+        'learning_rate': [0.01, 0.05, 0.1, 0.2],
+    }
+    gbm = GridSearchCV(estimator, param_grid)
+    gbm.fit(x_train, y_train)
+    return gbm
     
     
 
@@ -195,7 +175,7 @@ print('offline mean ACC score:',np.mean(cv_score))
 
 
 
-# 2 <Bagging>
+# 4 <Bagging>
 # >独立的训练一些基学习器(一般倾向于强大而复杂的模型比如完全生长的决策树)，然后综合他们的预测结果。
 """
 通常为了获得差异性较大的基学习器，我们对不同的基学习器给不同的训练数据集。根据**采样方式**有以下变体：
@@ -211,7 +191,7 @@ Random Patches:同时进行行采样、列采样得到样本子集
 相对多数投票法：预测为得票最多的标记，若有多个得票相同，则随机选取一个。
 加权投票法：以学习器的准确率为权重加权投票，并选择最多的票数标记。
 """
-## 2.1 <Random Forest 随机森林>
+## 4.1 <Random Forest 随机森林>
 # >随机森林的优点：防过拟合、抗噪声、无需规范化、速度快、
 # >随机森林的缺点：某些噪声过大的问题上会过拟合、对取值多的变量有偏好，因此属性权值不可信
 # >随机森林在基学习器较少的时候表现不太好，但随着基学习器数目的增加，随机森林通常会收敛到更低的方差。
@@ -250,7 +230,7 @@ plt.show()
   
   
   
-# 3 <Stacking>
+# 5 <Stacking>
 # >先训练初级学习器，然后用预测值来训练次级学习器
 # >训练几个初级学习器，然后用他们的预测结果来训练次级（元）学习器。
 
@@ -307,6 +287,40 @@ for fold_, (trn_idx, val_idx) in enumerate(folds_stack.split(train_stack,y_train
     
 print("CV score: {:<8.8f}".format(mean_squared_error(oof_stack, y_train_)))    
     
-    
+# <用基学习器的预测结果作为输入训练二级学习器>
+class StackingAveragedModels(BaseEstimator, RegressorMixin, TransformerMixin):
+    def __init__(self, base_models, meta_model, n_folds=5):
+        self.base_models = base_models
+        self.meta_model = meta_model
+        self.n_folds = n_folds
+   
+    # We again fit the data on clones of the original models
+    def fit(self, X, y):
+        self.base_models_ = [list() for x in self.base_models]
+        self.meta_model_ = clone(self.meta_model)
+        kfold = KFold(n_splits=self.n_folds, shuffle=True, random_state=156)
+        
+        # Train cloned base models then create out-of-fold predictions
+        # that are needed to train the cloned meta-model
+        out_of_fold_predictions = np.zeros((X.shape[0], len(self.base_models)))
+        for i, model in enumerate(self.base_models):
+            for train_index, holdout_index in kfold.split(X, y):
+                instance = clone(model)
+                self.base_models_[i].append(instance)
+                instance.fit(X[train_index], y[train_index])
+                y_pred = instance.predict(X[holdout_index])
+                out_of_fold_predictions[holdout_index, i] = y_pred
+                
+        # Now train the cloned  meta-model using the out-of-fold predictions as new feature
+        self.meta_model_.fit(out_of_fold_predictions, y)
+        return self
+   
+    #Do the predictions of all base models on the test data and use the averaged predictions as 
+    #meta-features for the final prediction which is done by the meta-model
+    def predict(self, X):
+        meta_features = np.column_stack([
+            np.column_stack([model.predict(X) for model in base_models]).mean(axis=1)
+            for base_models in self.base_models_ ])
+        return self.meta_model_.predict(meta_features)
     
     
