@@ -1,2 +1,2 @@
 # ML-Data-Mining
-Hello everyone！This is LiHao！
+想把数据竞赛框架化
