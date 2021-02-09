@@ -29,33 +29,10 @@ Random Patches:同时进行行采样、列采样得到样本子集
 训练几个初级学习器，然后用他们的预测结果来训练次级（元）学习器。
 
 # 4 Boosting
-能够降低模型的bias，迭代地训练 Base Model，每次根据上一个迭代中预测错误的情况修改训练样本的权重。也即 Gradient Boosting 的原理。比 Bagging 效果好，但更容易 Overfit。
-## 4.1 AdaBoost[Freund and Schapire,1997]
->提高前一轮弱分类器错误分类样本的权值，降低被正确分类样本的权值。
->**加权投票法**组合分类器
-
-**AdaBoost算法**：
-输入：训练数据集$T={(x_1,y_1),...,(x_m,y_m)}$，其中$x_i\in \mathbb{R}^n,y_i\in \{-1,+1\}$；弱学习器算法。
-输出：最终分类器$G(x)$。
-（1）初始化训练数据的权值
-$$D_1=(w_{11},...,w_{1m}),w_{1i}=\frac{1}{m},i=1,2,...,m$$
-（2）依次对K个弱学习器进行学习，$k=1,2,...,K$
-$\quad$（a）使用相同权值分布$D_k$的训练数据集学习，得到基本分类器
-$$G_k(x)\to\{-1,+1\}$$
-$\quad$（b）计算$G_k(x)$在训练数据集上的分类误差率，删除$e_k\ge \frac{1}{2}$的基学习器，说明基学习器比随机猜测还差。
-$$\displaystyle e_k=P(G_k(x_i)=\not y_i)=\sum_{i=1}^mw_{ki}I(G_k(x_i)=\not y_i)$$
-$\quad$（c）计算$G_k(x)$的系数
-$$\alpha_k=\frac{1}{2}ln\frac{1-e_k}{e_k}$$
-$\quad$（d）更新训练数据的权值
-$$D_{k+1}=(w_{k+1,1},...,w_{k+1,m}),w_{k+1,i}=\frac{w_{ki}}{Z_k}e^{-\alpha_ky_iG_k(x_i)},i=1,2,...,m$$
-这里，$Z_k$是规范化因子$\displaystyle Z_k=\sum^m_{i=1}w_{ki}e^{-\alpha_ky_iG_k(x_i)}$，它使$D_{k+1}$成为一个概率分布。
-（3）构建基本分类器的线性组合
-$$\displaystyle f(x)=\sum_{k=1}^K\alpha_kG_k(x)$$
-得到最终分类器：
-$$G(x)=sign(f(x))$$
-参考：《统计学习方法》李航
+## 4.1 AdaBoost
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201023114638648.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MjI5Nzg1NQ==,size_16,color_FFFFFF,t_70#pic_center)
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201023114652429.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MjI5Nzg1NQ==,size_16,color_FFFFFF,t_70#pic_center)
+
 
 ## 4.2 boosting tree（提升树）
 **提升树算法**（向前分布算法，逐渐减少残差）
