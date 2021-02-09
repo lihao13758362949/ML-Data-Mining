@@ -82,3 +82,68 @@ def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,n_jobs=1, tra
     plt.legend(loc="best")  
     return plt  
 plot_learning_curve(LinearRegression(), 'Liner_model', train_X[:1000], train_y_ln[:1000], ylim=(0.0, 0.5), cv=5, n_jobs=1)  
+
+# 5 <调参>
+# 5.1 <贪心调参>
+best_obj = dict()
+for obj in objective:
+    model = LGBMRegressor(objective=obj)
+    score = np.mean(cross_val_score(model, X=train_X, y=train_y_ln, verbose=0, cv = 5, scoring=make_scorer(mean_absolute_error)))
+    best_obj[obj] = score
+    
+best_leaves = dict()
+for leaves in num_leaves:
+    model = LGBMRegressor(objective=min(best_obj.items(), key=lambda x:x[1])[0], num_leaves=leaves)
+    score = np.mean(cross_val_score(model, X=train_X, y=train_y_ln, verbose=0, cv = 5, scoring=make_scorer(mean_absolute_error)))
+    best_leaves[leaves] = score
+    
+best_depth = dict()
+for depth in max_depth:
+    model = LGBMRegressor(objective=min(best_obj.items(), key=lambda x:x[1])[0],
+                          num_leaves=min(best_leaves.items(), key=lambda x:x[1])[0],
+                          max_depth=depth)
+    score = np.mean(cross_val_score(model, X=train_X, y=train_y_ln, verbose=0, cv = 5, scoring=make_scorer(mean_absolute_error)))
+    best_depth[depth] = score
+sns.lineplot(x=['0_initial','1_turning_obj','2_turning_leaves','3_turning_depth'], y=[0.143 ,min(best_obj.values()), min(best_leaves.values()), min(best_depth.values())])
+
+# 5.2 <Grid Search 调参>
+from sklearn.model_selection import GridSearchCV
+
+parameters = {'objective': objective , 'num_leaves': num_leaves, 'max_depth': max_depth}
+model = LGBMRegressor()
+clf = GridSearchCV(model, parameters, cv=5)
+clf = clf.fit(train_X, train_y)
+clf.best_params_
+# {'max_depth': 15, 'num_leaves': 55, 'objective': 'regression'}
+model = LGBMRegressor(objective='regression',
+                          num_leaves=55,
+                          max_depth=15)
+np.mean(cross_val_score(model, X=train_X, y=train_y_ln, verbose=0, cv = 5, scoring=make_scorer(mean_absolute_error)))
+# 5.3 <贝叶斯调参>
+from bayes_opt import BayesianOptimization
+def rf_cv(num_leaves, max_depth, subsample, min_child_samples):
+    val = cross_val_score(
+        LGBMRegressor(objective = 'regression_l1',
+            num_leaves=int(num_leaves),
+            max_depth=int(max_depth),
+            subsample = subsample,
+            min_child_samples = int(min_child_samples)
+        ),
+        X=train_X, y=train_y_ln, verbose=0, cv = 5, scoring=make_scorer(mean_absolute_error)
+    ).mean()
+    return 1 - val
+rf_bo = BayesianOptimization(
+    rf_cv,
+    {
+    'num_leaves': (2, 100),
+    'max_depth': (2, 100),
+    'subsample': (0.1, 1),
+    'min_child_samples' : (2, 100)
+    }
+)
+rf_bo.maximize()
+
+
+
+
+
