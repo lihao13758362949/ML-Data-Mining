@@ -35,32 +35,9 @@ Random Patches:同时进行行采样、列采样得到样本子集
 
 
 ## 4.2 boosting tree（提升树）
-**提升树算法**（向前分布算法，逐渐减少残差）
-**注：提升树算法仅在损失函数为平方误差损失函数时适用。**
-输入：训练数据集$T={(x_1,y_1),...,(x_m,y_m)}$，其中$x_i\in \mathbb{R}^n,y_i\in \{-1,+1\}$。
-输出：提升树$f_K(x)$。
-（1）初始化$f_0(x)=0$
-（2）对K棵决策树，$k=1,2,...,K$
-$\quad$（a）计算残差：$r_{ki}=y_i-f_{k-1}(x_i),i=1,2,...,m$
-$\quad$（b）拟合残差学习一个回归树：$T(x;\Theta_k)$
-$\quad$（c）更新：$f_k(x)=f_{k-1}(x)+T(x;\Theta_k)$
-（3）得到回归问题的提升树（分类问题即对回归问题的提升树进行**符号函数**变换）：
-$$f_K(x)=\sum_{k=1}^KT(x;\Theta_k)$$
-参考：《统计学习方法》李航
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201023114610158.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MjI5Nzg1NQ==,size_16,color_FFFFFF,t_70#pic_center)
 
 ## 4.3 Gradient Tree Boosting （GB\(R\)T，梯度提升树）
-**梯度提升树算法**（一般化的提升树算法）
-输入：训练数据集$T={(x_1,y_1),...,(x_m,y_m)}$，其中$x_i\in \mathbb{R}^n,y_i\in \{-1,+1\}$；损失函数$L(y,f(x))$。
-输出：提升树$\hat f(x)$。
-（1）初始化$f_0(x)=arg min_c\sum^m_{i=1}L(y_i,c)$
-（2）对K棵决策树，$k=1,2,...,K$
-$\quad$（a）计算损失函数的负梯度：$r_{ki}=-\frac{\partial L(y_i,f_{k-1}(x_i))}{\partial f_{k-1}(x_i)},i=1,2,...,m$
-$\quad$（b）对$r_{ki}$拟合一个回归树，得到第K棵树的叶结点区域：$R_{kj},j=1,2,...J$
-$\quad$（c）对$j=1,2,...,J$，计算$\displaystyle c_{kj}=argmin_c\sum_{x_i\in R_{kj}}L(y_i,f_{k-1}(x_i)+c)$
-$\quad$（d）更新：$f_k(x)=f_{k-1}(x)+\sum_{j=1}^Jc_{kj}I(x\in R_{kj})$
-（3）得到回归问题的提升树（分类问题即对回归问题的提升树进行**符号函数**变换）：
-$$\displaystyle \hat f(x)=f_K(x)=\sum_{k=1}^K\sum_{j=1}^Jc_{kj}I(x\in R_{kj})$$
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201023114555628.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MjI5Nzg1NQ==,size_16,color_FFFFFF,t_70#pic_center)
 
 
