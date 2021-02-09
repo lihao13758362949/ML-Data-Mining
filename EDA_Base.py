@@ -1,6 +1,9 @@
-# 数据探索性分析 EDA_Base.py
-
-# 1.导入库
+'''
+数据探索性分析 EDA_Base.py
+输入：文件
+输出：train,test
+'''
+# 1 <导入库>
 import pandas as pd
 import numpy as np
 import os
@@ -8,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats as st
 
-# 2.读取数据
+# 2 <读取数据>
 path = '../input/' # 文件目录，相对路径
 MAX_ROWS = 100000  # 文件读取行数
 types = {
@@ -50,35 +53,49 @@ def get_data(path,data_type='csv',header=0,names=None,nrows=MAX_ROWS,dtype=types
     return df
 
 
-
-
 # 多文件读取
-def get_data2(path, get_type=True):
-    features = []
-    for file in tqdm(os.listdir(path)):
-        file_path = os.path.join(path, file)
-        df = pd.read_csv(file_path)
-        if get_type:
-            features.append([df['x'].std(), df['x'].mean(),
-                             df['y'].std(), df['y'].mean(),
-                             df['速度'].mean(), df['速度'].std(), 
-                             df['方向'].mean(), df['方向'].std(),
-                             file,
-                             df['type'][0]])
+for file in tqdm(os.listdir(path)):
+    file_path = os.path.join(path, file)
+    df = pd.read_csv(file_path)
+
+    
+def reduce_mem_usage(df):
+    """ iterate through all the columns of a dataframe and modify the data type
+        to reduce memory usage.        
+    """
+    start_mem = df.memory_usage().sum() 
+    print('Memory usage of dataframe is {:.2f} MB'.format(start_mem))
+    
+    for col in df.columns:
+        col_type = df[col].dtype
+        
+        if col_type != object:
+            c_min = df[col].min()
+            c_max = df[col].max()
+            if str(col_type)[:3] == 'int':
+                if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
+                    df[col] = df[col].astype(np.int8)
+                elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
+                    df[col] = df[col].astype(np.int16)
+                elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
+                    df[col] = df[col].astype(np.int32)
+                elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
+                    df[col] = df[col].astype(np.int64)  
+            else:
+                if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
+                    df[col] = df[col].astype(np.float16)
+                elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
+                    df[col] = df[col].astype(np.float32)
+                else:
+                    df[col] = df[col].astype(np.float64)
         else:
-            features.append([df['x'].std(), df['x'].mean(),
-                             df['y'].std(), df['y'].mean(),
-                             df['速度'].mean(), df['速度'].std(), 
-                             df['方向'].mean(), df['方向'].std(),
-                             file])
-    df = pd.DataFrame(features)
-    if get_type:
-        df = df.rename(columns={len(features[0])-1:'label'})
-        df = df.rename(columns={len(features[0])-2:'filename'})
-        label_dict = {'拖网':0, '刺网':1, '围网':2}
-        df['label'] = df['label'].map(label_dict)
-    else:
-        df = df.rename(columns={len(features[0])-1:'filename'})
+            df[col] = df[col].astype('category')
+
+    end_mem = df.memory_usage().sum() 
+    print('Memory usage after optimization is: {:.2f} MB'.format(end_mem))
+    print('Decreased by {:.1f}%'.format(100 * (start_mem - end_mem) / start_mem))
+    return df
+
 
 # 按照单车ID和时间进行排序
 bike_track = bike_track.sort_values(['BICYCLE_ID', 'LOCATING_TIME'])
