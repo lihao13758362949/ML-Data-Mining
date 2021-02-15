@@ -54,9 +54,20 @@ def get_data(path,data_type='csv',header=0,names=None,nrows=MAX_ROWS,dtype=types
 
 
 # 多文件读取
+df_all=[]
 for file in tqdm(os.listdir(path)):
     file_path = os.path.join(path, file)
     df = pd.read_csv(file_path)
+    df_all.append(df)
+    
+bike_track = pd.concat([
+    pd.read_csv(PATH + 'gxdc_gj20201221.csv'),
+    pd.read_csv(PATH + 'gxdc_gj20201222.csv'),
+    pd.read_csv(PATH + 'gxdc_gj20201223.csv'),
+    pd.read_csv(PATH + 'gxdc_gj20201224.csv'),
+    pd.read_csv(PATH + 'gxdc_gj20201225.csv')
+
+])
 
     
 def reduce_mem_usage(df):
