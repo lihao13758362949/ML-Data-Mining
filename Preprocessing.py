@@ -135,46 +135,7 @@ def outliers_proc(data, col_name, scale=3):
     return data_n
 train = outliers_proc(train, 'power', scale=3)
 
-# 4 <数据标准化/归一化>
-'''
-数据标准化/归一化的作用：
-1. 在梯度下降中不同特征的更新速度变得一致，更容易找到最优解
 
-
-应用场景：
-通过梯度下降法求解的模型需要归一化：线性回归、逻辑回归、SVM、NN等
-
-决策树不需要归一化，因为是否归一化不会改变信息增益
-'''
-# 4.1 <标准正态分布标准化>Z-Score Normalization
-Scaler=StandardScaler(copy=True, with_mean=True, with_std=True)
-df[column]=StandardScaler().fit_transform(df[column][:,np.newaxis])
-
-X_scaled = preprocessing.scale(X)  # Scaler=scale(X, axis=0, with_mean=True, with_std=True, copy=True)
-'''
-z=(x-miu)/sigma
-'''
-## 4.2 <Min-max归一化（0-1）>Min-Max Scaling
-Scaler=MinMaxScaler(feature_range=(0, 1), copy=True)
-Scaler=minmax_scale(X, feature_range=(0, 1), axis=0, copy=True)
-'''
-def scale_minmax(col):
-    return (col-col.min())/(col.max()-col.min())
-'''
-Scaler=MaxAbsScaler(copy=True)# [-1,1]
-Scaler=maxabs_scale(X, axis=0, copy=True)
-Scaler.fit(X_train)
-Scaler.transform(X_test)
-Scaler.fit_transform(X_train)
-
-#standardizing data实例
-saleprice_scaled = StandardScaler().fit_transform(df_train['SalePrice'][:,np.newaxis]);
-low_range = saleprice_scaled[saleprice_scaled[:,0].argsort()][:10]
-high_range= saleprice_scaled[saleprice_scaled[:,0].argsort()][-10:]
-print('outer range (low) of the distribution:')
-print(low_range)
-print('\nouter range (high) of the distribution:')
-print(high_range)
 
 
 
