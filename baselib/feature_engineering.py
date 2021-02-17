@@ -1,16 +1,21 @@
-# <特征工程> 输入：train_pro.csv,test_pro.csv 输出：train_final.csv,test_final.csv或 train_for_tree.csv,test_for_tree.csv,train_for_lr.csv,...
-# >特征决定你的上限，模型只不过在无限逼近这个值罢了。
-# >有人总结 Kaggle 比赛是 “Feature 为主，调参和 Ensemble 为辅”，我觉得很有道理。Feature Engineering 能做到什么程度，取决于对数据领域的了解程度。
-# >比如在数据包含大量文本的比赛中，常用的 NLP 特征就是必须的。怎么构造有用的 Feature，是一个不断学习和提高的过程。
-# >特征工程与EDA联系紧密，可以说是EDA具体的操作吧。因为数据分析本身就是“假设”-“分析”-“验证”的过程，这个验证的过程一般是指构建特征并进行本地CV验证。
-# >特征工程本质做的工作是，将数据字段转换成适合模型学习的形式，降低模型的学习难度。
-# >之所以构造不同的数据集是因为，不同模型对数据集的要求不同
+'''
+<特征工程> 
+输入：train_pro.csv,test_pro.csv
+输出：train_final.csv,test_final.csv或 train_for_tree.csv,test_for_tree.csv,train_for_lr.csv,...
 
-# >我在做特征工程的时候主要依靠两条线索。一条从问题本身出发，比如对于点击率预估问题，考虑用户会怎么想，用户会关心什么，同时也考虑商品适合哪些用户，购买这些商品的人有哪些共同点。
-# >另一条从特征类型出发，比如考虑做哪些特征交叉；哪些特征在分布上非常诡异，需要做一些预处理；哪些特征是多值类别特征，需要做特殊操作；哪些特征的量纲一致，可以做比较以及求和。
-# >在做特征的时候，尽量做得细致全面，不要在比赛初期考虑哪些特征会对模型产生副作用就放弃采用。因为只要严格保证自己的特征在训练集、验证集和测试集是一致的（特征的含义严格一致，同时特征的取值分布也基本一致），
-# >理论上这些特征就都不会对模型产生副作用（对于极个别无法保证一致的特征，可以在公榜上实验。换榜时，也要格外注意这些特征）。
-# > 自动特征工程FeatureTools
+>特征决定你的上限，模型只不过在无限逼近这个值罢了。
+>有人总结 Kaggle 比赛是 “Feature 为主，调参和 Ensemble 为辅”，我觉得很有道理。Feature Engineering 能做到什么程度，取决于对数据领域的了解程度。
+>比如在数据包含大量文本的比赛中，常用的 NLP 特征就是必须的。怎么构造有用的 Feature，是一个不断学习和提高的过程。
+>特征工程与EDA联系紧密，可以说是EDA具体的操作吧。因为数据分析本身就是“假设”-“分析”-“验证”的过程，这个验证的过程一般是指构建特征并进行本地CV验证。
+>特征工程本质做的工作是，将数据字段转换成适合模型学习的形式，降低模型的学习难度。
+>之所以构造不同的数据集是因为，不同模型对数据集的要求不同
+
+>我在做特征工程的时候主要依靠两条线索。一条从问题本身出发，比如对于点击率预估问题，考虑用户会怎么想，用户会关心什么，同时也考虑商品适合哪些用户，购买这些商品的人有哪些共同点。
+>另一条从特征类型出发，比如考虑做哪些特征交叉；哪些特征在分布上非常诡异，需要做一些预处理；哪些特征是多值类别特征，需要做特殊操作；哪些特征的量纲一致，可以做比较以及求和。
+>在做特征的时候，尽量做得细致全面，不要在比赛初期考虑哪些特征会对模型产生副作用就放弃采用。因为只要严格保证自己的特征在训练集、验证集和测试集是一致的（特征的含义严格一致，同时特征的取值分布也基本一致），
+>理论上这些特征就都不会对模型产生副作用（对于极个别无法保证一致的特征，可以在公榜上实验。换榜时，也要格外注意这些特征）。
+> 自动特征工程FeatureTools
+'''
 
 # 1 <连接数据>
 train_pro = pd.read_csv('train_pro.csv')
@@ -24,7 +29,9 @@ train["SimplOverallQual"] = train.OverallQual.replace({1 : 1, 2 : 1, 3 : 1, # ba
                                                        7 : 3, 8 : 3, 9 : 3, 10 : 3 # good
                                                       })
 ## 2.2 <组合>（特征间的加减乘除）
+### 2.2.1 <连续变量的组合>
 train["OverallGrade"] = train["OverallQual"] * train["OverallCond"]
+### 2.2.2 <离散变量的组合>
 
 ## 2.3 <多项式>
 train["OverallQual-s2"] = train["OverallQual"] ** 2
@@ -94,8 +101,54 @@ data = data.drop(['creatDate', 'regDate', 'regionCode'], axis=1)
 # >Lasso 回归和决策树可以完成嵌入式特征选择
 # >大部分情况下都是用嵌入式做特征筛选
 
+# 4 <数据标准化/归一化>
+'''
+数据标准化/归一化的作用：
+1. 在梯度下降中不同特征的更新速度变得一致，更容易找到最优解
 
-# 5.<编码>
+
+应用场景：
+通过梯度下降法求解的模型需要归一化：线性回归、逻辑回归、SVM、NN等
+
+决策树不需要归一化，因为是否归一化不会改变信息增益
+'''
+# 4.1 <标准正态分布标准化>Z-Score Normalization
+Scaler=StandardScaler(copy=True, with_mean=True, with_std=True)
+df[column]=StandardScaler().fit_transform(df[column][:,np.newaxis])
+
+X_scaled = preprocessing.scale(X)  # Scaler=scale(X, axis=0, with_mean=True, with_std=True, copy=True)
+'''
+z=(x-miu)/sigma
+'''
+## 4.2 <Min-max归一化（0-1）>Min-Max Scaling
+Scaler=MinMaxScaler(feature_range=(0, 1), copy=True)
+Scaler=minmax_scale(X, feature_range=(0, 1), axis=0, copy=True)
+'''
+def scale_minmax(col):
+    return (col-col.min())/(col.max()-col.min())
+'''
+Scaler=MaxAbsScaler(copy=True)# [-1,1]
+Scaler=maxabs_scale(X, axis=0, copy=True)
+Scaler.fit(X_train)
+Scaler.transform(X_test)
+Scaler.fit_transform(X_train)
+
+#standardizing data实例
+saleprice_scaled = StandardScaler().fit_transform(df_train['SalePrice'][:,np.newaxis]);
+low_range = saleprice_scaled[saleprice_scaled[:,0].argsort()][:10]
+high_range= saleprice_scaled[saleprice_scaled[:,0].argsort()][-10:]
+print('outer range (low) of the distribution:')
+print(low_range)
+print('\nouter range (high) of the distribution:')
+print(high_range)
+
+# 5.<特征编码>
+'''
+对于频数较少的那些分类变量可以归类到‘其他’pandas.DataFrame.replace后再进行编码。
+对于字符型的特征，要在编码后转换数据类型pandas.DataFrame.astype
+'''
+from sklearn.preprocessing import OrdinalEncoder,OneHotEncoder
+## 5.1 <手动编码>
 train = train.replace({"MSSubClass" : {20 : "SC20", 30 : "SC30", 40 : "SC40", 45 : "SC45", 
                                        50 : "SC50", 60 : "SC60", 70 : "SC70", 75 : "SC75", 
                                        80 : "SC80", 85 : "SC85", 90 : "SC90", 120 : "SC120", 
@@ -125,18 +178,29 @@ for col in cols:
 # credit.head(9)
 
 
-
+## 5.2 <序号编码>Ordinary Encoding
+OrdinalEncoder(categories=’auto’, dtype=<class ‘numpy.float64’>)
+## 5.3 <独热编码>One-hot Encoding
+'''
+会导致高维度特征，应配合特征选择来降低维度
+'''
 OneHotEncoder(n_values=None, categorical_features=None, categories=None, drop=None, sparse=True, dtype=<class ‘numpy.float64’>, handle_unknown=’error’)# 热编码，若有n个类，则生成n个特征，其中一个是1其余是0.
 # `sparse`：默认为True表示用稀疏矩阵表示，一般使用`.toarray()`转换到False，即数组。
-OrdinalEncoder(categories=’auto’, dtype=<class ‘numpy.float64’>)# 序数编码
+## 5.4 <二进制编码>Binary Encoding
+'''
+用二进制来表示不同的类别如3表示为011
+维度少于独热编码
+'''
+## 5.6 其它编码方式，比如Helmert Contrast、Sum Contrast、Polynomial Contrast、Backward Difference Contrast等。
+
+
 LabelEncoder().fit_transform(data[feature].astype(np.str)
 # 对类别特征进行 OneEncoder
 data = pd.get_dummies(data, columns=['model', 'brand', 'bodyType', 'fuelType',
                                      'gearbox', 'notRepairedDamage', 'power_bin'])
-#对于频数较少的那些分类变量可以归类到‘其他’pandas.DataFrame.replace后再进行编码。
-#对于字符型的特征，要在编码后转换数据类型pandas.DataFrame.astype
 
-# <连续变量离散化>（分箱）
+
+## 5.6 <连续变量离散化>（分箱）
 # 等频分桶；
 # 等距分桶；
 # Best-KS 分桶（类似利用基尼指数进行二分类）；
