@@ -1,11 +1,18 @@
-# <数据预处理> 输入：train,test 输出：train_pro,test_pro
+'''
+Preprocessing.py
+<数据预处理> 
+输入：train,test
+输出：train_pro,test_pro
 
-# <连接数据>
+
+'''
+
+# 0 <连接数据>
 all_data = pd.concat([train.assign(is_train=1), test.assign(is_train=0)]) #把训练集和测试集一起处理可以减少代码量
 
 from sklearn import preprocessing
 #from sklearn.preprocessing import *
-# 1. <删除重复数据>
+# 1 <删除重复数据>
 .drop_duplicates(subset=,keep=) # 删除重复数据
 # subset：指出需要删除重复数据的列。
 # keep：保留重复的哪一个数据，last,first,False，false表示删除所有重复数据。
