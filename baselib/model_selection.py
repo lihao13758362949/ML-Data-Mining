@@ -84,7 +84,7 @@ def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,n_jobs=1, tra
 plot_learning_curve(LinearRegression(), 'Liner_model', train_X[:1000], train_y_ln[:1000], ylim=(0.0, 0.5), cv=5, n_jobs=1)  
 
 # 5 <调参>
-# 5.1 <贪心调参>
+## 5.1 <贪心调参>
 best_obj = dict()
 for obj in objective:
     model = LGBMRegressor(objective=obj)
@@ -106,7 +106,7 @@ for depth in max_depth:
     best_depth[depth] = score
 sns.lineplot(x=['0_initial','1_turning_obj','2_turning_leaves','3_turning_depth'], y=[0.143 ,min(best_obj.values()), min(best_leaves.values()), min(best_depth.values())])
 
-# 5.2 <Grid Search 调参>
+## 5.2 <Grid Search 调参>网格搜索
 from sklearn.model_selection import GridSearchCV
 
 parameters = {'objective': objective , 'num_leaves': num_leaves, 'max_depth': max_depth}
@@ -119,7 +119,24 @@ model = LGBMRegressor(objective='regression',
                           num_leaves=55,
                           max_depth=15)
 np.mean(cross_val_score(model, X=train_X, y=train_y_ln, verbose=0, cv = 5, scoring=make_scorer(mean_absolute_error)))
-# 5.3 <贝叶斯调参>
+## 5.3 <随机搜索>
+
+## 5.4 <贝叶斯优化算法>
+'''
+贝叶斯优化算法在寻找最优最值参数时，采用了与网格搜索、随机搜
+索完全不同的方法。网格搜索和随机搜索在测试一个新点时 ，会忽略前一
+个点的信息;而贝叶斯优化算法则充分利用了之前的信息。贝叶斯优化算
+法通过对目标函数形状进行学习，找到使目标函数向全局最优值提升的参
+数。具体来说，它学习目标函数形状的方法是，首先根据先验分布，假设
+-个搜集函数;然后，每一次使用新的采样点来测试目标函数时,利用这
+个信息来更新目标函数的先验分布;最后，算法测试由后验分布给出的全
+局最值最可能出现的位置的点。对于贝叶斯优化算法，有一个需要注意的
+地方，一但找到了一-个局部最优值，它会在该区域不断采样，所以很容易
+陷入局部最优值。为了弥补这个缺陷，贝叶斯优化算法会在探索和利用之
+间找到-一个平衡点，“ 探索”就是在还未取样的区域获取采样点;而“利
+用”则是根据后验分布在最可能出现全局最值的区域进行采样。
+
+'''
 from bayes_opt import BayesianOptimization
 def rf_cv(num_leaves, max_depth, subsample, min_child_samples):
     val = cross_val_score(
