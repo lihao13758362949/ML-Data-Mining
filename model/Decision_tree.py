@@ -1,3 +1,10 @@
+'''
+Decision_tree.py
+决策树
+优点:计算复杂度不高，输出结果易于理解，对中间值的缺失不敏感，可以处理不相关特征数据。
+缺点:可能会产生过度匹配问题。
+
+'''
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 
