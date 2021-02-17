@@ -16,6 +16,7 @@ def metric(y_true,y_pred,type=reg):
         # >mean_squared_log_error
         # >median_absolute_error
         # >r2_score
+        # >Mean Absolute Percent Error (MAPE)
     if type==cls:
         # 分类器评价指标
         accuracy_score(y_true, y_pred, normalize=True, sample_weight=None)# 准确率
