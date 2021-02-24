@@ -10,6 +10,10 @@ Dimensionality_Reduction.py
 '''
 
 # 1 <多维缩放>(Multiple Dimensional scaling,MDS)
+'''
+西瓜书上有
+'''
+
 
 # 2 <主成分分析>(Principal Component Analysis,PCA)
 '''
@@ -26,3 +30,5 @@ Dimensionality_Reduction.py
 # 3 <因子分析>(Factor Analysis,FA)
 
 # 4 <独立成分分析>(Independent Component Analysis,ICA)
+
+# 5 <线性判别分析>(Linear Discriminant Analysis,LDA)
