@@ -27,6 +27,8 @@ MiniBatchKMeans(n_clusters=8, init=’k-means++’, max_iter=100, batch_size=100
 
 # 1.2 <学习向量量化>（Learning Vector Quantization,LVQ)
 # 1.3 <高斯混合聚类>(Mixture-of-Gaussian)
+# 1.4 <密度聚类>DBSCAN
+# 1.5 <层次聚类>
 # 2 <密度估计>density estimation
 
 # 3 <异常检测>anomaly detection
