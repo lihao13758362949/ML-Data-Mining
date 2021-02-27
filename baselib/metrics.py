@@ -52,9 +52,16 @@ def metric(y_true,y_pred,type=reg):
         homogeneity_score(labels_true, labels_pred)：同质性
         homogeneity_completeness_v_measure(labels_true, labels_pred, beta=1.0)
         v_measure_score(labels_true, labels_pred, beta=1.0)
-        fowlkes_mallows_score(labels_true, labels_pred, sparse=False)
+        # 外部指标
+        # Jaccard系数
+        fowlkes_mallows_score(labels_true, labels_pred, sparse=False) # FM指数
+        # Rand指数
         silhouette_score(X, labels, metric=’euclidean’, sample_size=None, random_state=None, **kwds) 轮廓系数
         calinski_harabasz_score(X, labels)
-        davies_bouldin_score(X, labels)
+        
+        
+        # 内部指标
+        davies_bouldin_score(X, labels) # DB指数
+        # Dunn指数，DI
         contingency_matrix(labels_true, labels_pred, eps=None, sparse=False)
 
