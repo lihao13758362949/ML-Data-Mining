@@ -87,7 +87,7 @@ train_label = train[train['order_pay_date'].astype(str)>='2013-07-04']
 
 # 2 <减变量><特征选择>（Feature Selection）
 ## 2.1 <降维算法> 
-# >https://blog.csdn.net/weixin_42297855/article/details/99210716
+
 ## 2.2 <直接删除>
 # >利用好了，就可以删掉原始数据了
 data = data.drop(['creatDate', 'regDate', 'regionCode'], axis=1)
