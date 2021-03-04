@@ -4,7 +4,7 @@
 输出：train,test
 '''
 # 1 <导入库>
-import pandas as pd
+
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -12,17 +12,7 @@ import seaborn as sns
 import scipy.stats as st
 
 # 2 <读取数据>
-path = '../input/' # 文件目录，相对路径
-MAX_ROWS = 100000  # 文件读取行数
-types = {
-         'DRIVING_DIRECTION': np.uint16,
-         'OPERATING_STATUS': np.uint8,
-         'LONGITUDE': np.float32,
-         'LATITUDE': np.float32,
-         'GPS_SPEED': np.float16 
-        }
-
-def get_data(path,data_type='csv',header=0,names=None,nrows=MAX_ROWS,dtype=types,sep = ' '):
+def get_data(path,data_type='csv',header=0,names=None,nrows=None,sep = ' '):
     """
     get_data函数作用：
     读取数据
@@ -33,17 +23,18 @@ def get_data(path,data_type='csv',header=0,names=None,nrows=MAX_ROWS,dtype=types
     data_type：读取文件的类型
     header：指定哪一行作为列名，若为None则通过names指定，0为默认值，数字表示行数
     names：指定列名，如['a1','a2']
-    nrows：指定要读取的行数
+    nrows：指定要读取的行数，None表示无限制
     dtype：数据字段压缩的操作，将字段类型根据取值空间进行修改，压缩内存使用需求。
     sep：分隔符
     
     例子：若file名为'taxiGps20190531.csv'
-    df = get_data(path+'taxiGps20190531.csv')
+    df = get_data('taxiGps20190531.csv')
     """
+    import pandas as pd
     if data_type == 'csv':
-        df = pd.read_csv(path,header=header,names=names,nrows=MAX_ROWS)
+        df = pd.read_csv(path,header=header,names=names,nrows=nrows)
     if data_type == 'xlsx':
-        df=pd.read_excel(path,header=header,names=names,nrows=MAX_ROWS)
+        df=pd.read_excel(path,header=header,names=names,nrows=nrows)
     if data_type == 'arff':
         # 读取arff文件
         from scipy.io import arff
@@ -54,20 +45,22 @@ def get_data(path,data_type='csv',header=0,names=None,nrows=MAX_ROWS,dtype=types
 
 
 # 多文件读取
-df_all=[]
-for file in tqdm(os.listdir(path)):
-    file_path = os.path.join(path, file)
-    df = pd.read_csv(file_path)
-    df_all.append(df)
-    
-bike_track = pd.concat([
-    pd.read_csv(PATH + 'gxdc_gj20201221.csv'),
-    pd.read_csv(PATH + 'gxdc_gj20201222.csv'),
-    pd.read_csv(PATH + 'gxdc_gj20201223.csv'),
-    pd.read_csv(PATH + 'gxdc_gj20201224.csv'),
-    pd.read_csv(PATH + 'gxdc_gj20201225.csv')
+def get_more_data():
+    from tqdm import tqdm
+    df_all=[]
+    for file in tqdm(os.listdir(path)):
+        file_path = os.path.join(path, file)
+        df = pd.read_csv(file_path)
+        df_all.append(df)
 
-])
+    bike_track = pd.concat([
+        pd.read_csv(PATH + 'gxdc_gj20201221.csv'),
+        pd.read_csv(PATH + 'gxdc_gj20201222.csv'),
+        pd.read_csv(PATH + 'gxdc_gj20201223.csv'),
+        pd.read_csv(PATH + 'gxdc_gj20201224.csv'),
+        pd.read_csv(PATH + 'gxdc_gj20201225.csv')
+
+    ])
 
     
 def reduce_mem_usage(df):
@@ -109,19 +102,22 @@ def reduce_mem_usage(df):
 
 
 # 按照单车ID和时间进行排序
-bike_track = bike_track.sort_values(['BICYCLE_ID', 'LOCATING_TIME'])
-taxigps2019 = taxigps2019[taxigps2019.columns[::-1]]
-taxigps2019.sort_values(by=['CARNO','GPS_TIME'], inplace=True)
-taxigps2019.reset_index(inplace=True, drop=True)
+def sort(df,col=[]):
+         bike_track = bike_track.sort_values(['BICYCLE_ID', 'LOCATING_TIME'])
+         taxigps2019 = taxigps2019[taxigps2019.columns[::-1]]
+         taxigps2019.sort_values(by=['CARNO','GPS_TIME'], inplace=True)
+         taxigps2019.reset_index(inplace=True, drop=True)
 
 #修改数据类型
-df['xxx'] = df['xxx'].astype(np.int8)
+def change_type(df,col=[]):
+         df['xxx'] = df['xxx'].astype(np.int8)
 
 # 3.数据集基本信息
 ## 一键生成EDA
-import pandas_profiling
-pfr = pandas_profiling.ProfileReport(Train_data)
-pfr.to_file("./example.html")
+def one_key_EDA(df):
+         import pandas_profiling
+         pfr = pandas_profiling.ProfileReport(df)
+         pfr.to_file("./example.html")
 
 df.info()
 
@@ -233,13 +229,13 @@ correlation = price_numeric.corr()
 print(correlation['price'].sort_values(ascending = False),'\n')
 
 ## 5.5 作图
-def plot(X,y,X_cols,y_col,plot_type=scatter):
+def plot(X,y,X_cols,y_col,plot_type='scatter'):
     #scatter:散点图，pairplot:sns.pairplot，box：箱图，hist：直方图，heatmap：相关分析，热度图，list:列表汇总
-    if plot_type==scatter:
+    if plot_type=='scatter':
         # 散点图（num+num）
         data = pd.concat([X, y], axis=1)
         data.plot.scatter(x=X_cols, y=y_col);
-    if plot_type==pairplot:
+    if plot_type=='pairplot':
         #sns.pairplot
         sns.set()
         columns = ['price', 'v_12', 'v_8' , 'v_0', 'power', 'v_5',  'v_2', 'v_6', 'v_1', 'v_14']
@@ -251,18 +247,18 @@ def plot(X,y,X_cols,y_col,plot_type=scatter):
         kind='reg'添加拟合直线和95%置信区间 'scatter'表示散点图
         """
         plt.show();
-    if plot_type=box:
+    if plot_type=='box':
         # 箱图（num+clas）
         var = 'region'
         data = pd.concat([df[y_col], df[var]], axis=1)
         f, ax = plt.subplots(figsize=(8, 6))
         fig = sns.boxplot(x=var, y=y_col, data=data)
         # fig.axis(ymin=0, ymax=800000);
-    if plot_type=hist:
+    if plot_type=='hist':
         # 对比，直方图
         g = sns.FacetGrid(train_df, col='Survived') # row='Pclass', size=2.2, aspect=1.6
         g.map(plt.hist, 'Age', bins=20)
-    if plot_type=heatmap:
+    if plot_type=='heatmap':
         # 相关分析，热度图heatmaps1
         corrmat = df_train.corr()
         f, ax = plt.subplots(figsize=(12, 9))
@@ -274,7 +270,7 @@ def plot(X,y,X_cols,y_col,plot_type=scatter):
         sns.set(font_scale=1.25)
         hm = sns.heatmap(cm, cbar=True, annot=True, square=True, fmt='.2f', annot_kws={'size': 10}, yticklabels=cols.values, xticklabels=cols.values)
         plt.show()
-    if plot_type=list:
+    if plot_type=='list':
         # 列表汇总（分类变量+数字变量）
         train_df[['Pclass', 'Survived']].groupby(['Pclass'], as_index=False).mean().sort_values(by='Survived', ascending=False)
 
