@@ -14,7 +14,7 @@ import warnings
 warnings.filterwarnings("ignore") # 过滤警告文字
 
 # plt设置
-%matplotlib inline # 不用show就可以显示图片
+# %matplotlib inline # 不用show就可以显示图片，这一条需要手动在notebook中输入
 
 import matplotlib.pyplot as plt
 plt.rcParams['font.sans-serif']=['SimHei']
