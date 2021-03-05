@@ -21,3 +21,6 @@ plt.rcParams['font.sans-serif']=['SimHei']
 plt.rcParams['axes.unicode_minus']=False # 在图片中显示中文
 
 plt.style.use('fivethirtyeight')
+
+# time类型设置
+# %%time #显示程序块运行时间，这一条需要手动在notebook中输入
