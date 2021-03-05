@@ -9,6 +9,11 @@ Preprocessing.py
 
 # 0 <连接数据>
 all_data = pd.concat([train.assign(is_train=1), test.assign(is_train=0)]) #把训练集和测试集一起处理可以减少代码量
+import gc
+del train,test;gc.collect()
+
+# all_data = pd.merge(all_data, item, how='left', on='item_id') # 合并数据集
+
 
 from sklearn import preprocessing
 #from sklearn.preprocessing import *
