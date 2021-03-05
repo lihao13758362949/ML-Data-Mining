@@ -44,8 +44,8 @@ def get_data(path,data_type='csv',header=0,names=None,nrows=None,sep = ' '):
     return df
 
 
-# 多文件读取
 def get_more_data():
+    # 多文件读取
     from tqdm import tqdm
     df_all=[]
     for file in tqdm(os.listdir(path)):
@@ -67,7 +67,7 @@ def reduce_mem_usage(df):
     """ iterate through all the columns of a dataframe and modify the data type
         to reduce memory usage.        
     """
-    start_mem = df.memory_usage().sum() 
+    start_mem = df.memory_usage().sum()  / 1024**2 
     print('Memory usage of dataframe is {:.2f} MB'.format(start_mem))
     
     for col in df.columns:
@@ -95,10 +95,15 @@ def reduce_mem_usage(df):
         else:
             df[col] = df[col].astype('category')
 
-    end_mem = df.memory_usage().sum() 
+    end_mem = df.memory_usage().sum()  / 1024**2 
     print('Memory usage after optimization is: {:.2f} MB'.format(end_mem))
     print('Decreased by {:.1f}%'.format(100 * (start_mem - end_mem) / start_mem))
     return df
+
+def df_to_h5(df):
+    #从df转向hdf5，可以加快读取速度
+    df.to_hdf('train_test.h5', '1.0')
+    df = pd.read_hdf('train_test.h5', '1.0')
 
 
 # 按照单车ID和时间进行排序
@@ -108,17 +113,15 @@ def sort(df,col=[]):
          taxigps2019.sort_values(by=['CARNO','GPS_TIME'], inplace=True)
          taxigps2019.reset_index(inplace=True, drop=True)
 
-#修改数据类型
-def change_type(df,col=[]):
-         df['xxx'] = df['xxx'].astype(np.int8)
 
-# 3.数据集基本信息
+# 3 <数据集基本信息>
 ## 一键生成EDA
 def one_key_EDA(df):
          import pandas_profiling
          pfr = pandas_profiling.ProfileReport(df)
          pfr.to_file("./example.html")
-
+        
+'''
 df.info()
 
 columns = df.columns.values.tolist() #获取所有的变量名
@@ -140,8 +143,9 @@ for cat_fea in categorical_features:
     print(cat_fea + "的特征分布如下：")
     print("{}特征有个{}不同的值".format(cat_fea, Train_data[cat_fea].nunique()))
     print(Train_data[cat_fea].value_counts())
+'''
 
-# 4. 单变量探索
+# 4 <单变量探索>
 ## 4.1 columns处理
 # 数字变量和字符变量分开处理
 # Y_train = Train_data['price']
