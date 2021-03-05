@@ -148,6 +148,7 @@ for cat_fea in categorical_features:
 # 4 <单变量探索>
 ## 4.1 columns处理
 # 数字变量和字符变量分开处理
+import numpy as np
 # Y_train = Train_data['price']
 numeric_features = Train_data.select_dtypes(include=[np.number])
 # numeric_features.remove('price')
@@ -226,7 +227,15 @@ import pandas as pd
 ## 5.1 列表groupby玩法
 df_train[['Pclass', 'Survived']].groupby(['Pclass'], as_index=False).mean().sort_values(by='Survived', ascending=False)
 #count/sum/mean/median/std/var/min/max/first/last
-
+def groupby_cnt_ratio(df, col=[]):
+    if isinstance(col, str):
+        col = [col]
+    key = ['is_train', 'buyer_country_id'] + col
+    
+    # groupby function
+    cnt_stat = df.groupby(key).size().to_frame('count')
+    ratio_stat = (cnt_stat / cnt_stat.groupby(['is_train', 'buyer_country_id']).sum()).rename(columns={'count':'count_ratio'})
+    return pd.merge(cnt_stat, ratio_stat, on=key, how='outer').sort_values(by=['count'], ascending=False)
 ## 5.2 相关性分析
 price_numeric = Train_data[numeric_features]
 correlation = price_numeric.corr()
