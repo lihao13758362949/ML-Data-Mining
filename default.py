@@ -26,6 +26,7 @@ plt.style.use('fivethirtyeight')
 
 # 4 <sns设置>
 sns.set()
+sns.set(font='SimHei',font_scale=1.5)  # 解决Seaborn中文显示问题并调整字体大小
 
 # 5 <time类型设置>
 # %%time #显示程序块运行时间，这一条需要手动在notebook中输入
