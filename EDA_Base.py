@@ -40,7 +40,9 @@ def get_data(path,data_type='csv',header=0,names=None,nrows=None,sep = ' '):
         from scipy.io import arff
         data,meta=arff.loadarff(path)
         df=pd.DataFrame(data)
-
+    if data_type == 'tsv':
+        # tsv文件
+        df = pd.read_csv(path,sep='|')
     return df
 
 
