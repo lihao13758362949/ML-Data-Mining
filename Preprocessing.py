@@ -61,7 +61,7 @@ all_data = all_data.fillna(all_data.mean())
 #int( 中位数/0.5 + 0.5 ) * 0.5
 
 #还可以分组填充
-
+#例如 features['MSZoning'] = features.groupby('MSSubClass')['MSZoning'].transform(lambda x: x.fillna(x.mode()[0]))
 #保留缺失值，用'None'填充
 
 #偏正态分布，使用均值代替，可以保持数据的均值；偏长尾分布，使用中值代替，避免受 outlier 的影响
