@@ -5,8 +5,8 @@
 import pandas as pd
 
 #pd.set_option("display.max_columns",32) # 显示最大列数
-pd.options.display.max_rows = 1000 # 显示最大行数
-pd.options.display.max_columns = 20 # 显示最大列数
+pd.options.display.max_rows = 1000 # 显示最大行数，若为None则为无穷
+pd.options.display.max_columns = 20 # 显示最大列数，若为None则为无穷
 pd.set_option('display.float_format', lambda x: '%.2f' % x) # 小数格式设置
 
 # 2 <warning设置>
