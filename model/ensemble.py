@@ -322,5 +322,115 @@ class StackingAveragedModels(BaseEstimator, RegressorMixin, TransformerMixin):
             np.column_stack([model.predict(X) for model in base_models]).mean(axis=1)
             for base_models in self.base_models_ ])
         return self.meta_model_.predict(meta_features)
-    
-    
+
+
+class SBBTree():
+    """Stacking,Bootstap,Bagging----SBBTree"""
+    """ author：Cookly """
+
+    def __init__(self, params, stacking_num, bagging_num, bagging_test_size, num_boost_round, early_stopping_rounds):
+        """
+        Initializes the SBBTree.
+        Args:
+          params : lgb params.
+          stacking_num : k_fold stacking.
+          bagging_num : bootstrap num.
+          bagging_test_size : bootstrap sample rate.
+          num_boost_round : boost num.
+          early_stopping_rounds : early_stopping_rounds.
+        """
+        self.params = params
+        self.stacking_num = stacking_num
+        self.bagging_num = bagging_num
+        self.bagging_test_size = bagging_test_size
+        self.num_boost_round = num_boost_round
+        self.early_stopping_rounds = early_stopping_rounds
+
+        self.model = lgb
+        self.stacking_model = []
+        self.bagging_model = []
+
+    def fit(self, X, y):
+        """ fit model. """
+        if self.stacking_num > 1:
+            layer_train = np.zeros((X.shape[0], 2))
+            self.K = KFold(n_splits=self.stacking_num, shuffle=True, random_state=927)
+            for k, (train_index, test_index) in enumerate(self.K.split(X)):
+                print(f'******************* 第{k + 1}次stacking开始喽(●• ̀ω•́ )✧ *******************')
+                X_train = X.iloc[train_index]
+                y_train = y.iloc[train_index]
+                X_test = X.iloc[test_index]
+                y_test = y.iloc[test_index]
+
+                lgb_train = lgb.Dataset(X_train, y_train)
+                lgb_eval = lgb.Dataset(X_test, y_test, reference=lgb_train)
+
+                gbm = lgb.train(self.params,
+                                lgb_train,
+                                num_boost_round=self.num_boost_round,
+                                valid_sets=lgb_eval,
+                                categorical_feature=cat_cols,
+                                feval=rmsle,
+                                early_stopping_rounds=self.early_stopping_rounds,
+                                verbose_eval=0)
+
+                self.stacking_model.append(gbm)
+
+                pred_y = gbm.predict(X_test, num_iteration=gbm.best_iteration)
+                layer_train[test_index, 1] = pred_y
+            stack_pred = pd.DataFrame({'stack_pred': layer_train[:, 1]}, index=X.index)
+            X = pd.concat([X, stack_pred], axis=1)
+            # X = np.hstack((X, layer_train[:,1].reshape((-1,1))))
+            print('stacking finish')
+        else:
+            pass
+        for bn in range(self.bagging_num):
+            print(f'******************* 第{bn + 1}次bagging开始喽(●• ̀ω•́ )✧ *******************')
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.bagging_test_size, random_state=bn)
+            X_train = pd.DataFrame(X_train, columns=X.columns)
+            X_test = pd.DataFrame(X_test, columns=X.columns)
+            y_train = pd.Series(y_train, name=y.name)
+            y_test = pd.Series(y_test, name=y.name)
+
+            lgb_train = lgb.Dataset(X_train, y_train)
+            lgb_eval = lgb.Dataset(X_test, y_test, reference=lgb_train)
+
+            gbm = lgb.train(params,
+                            lgb_train,
+                            num_boost_round=self.num_boost_round,
+                            valid_sets=lgb_eval,
+                            categorical_feature=cat_cols,
+                            feval=rmsle,
+                            early_stopping_rounds=self.early_stopping_rounds,
+                            verbose_eval=0)
+
+            self.bagging_model.append(gbm)
+            print('bagging finish')
+
+    def predict(self, X_pred):
+        """ predict test data. """
+        if self.stacking_num > 1:
+            test_pred = np.zeros((X_pred.shape[0], self.stacking_num))
+            for sn, gbm in enumerate(self.stacking_model):
+                print(f'******************* 第{sn + 1}次stacking predict(●• ̀ω•́ )✧ *******************')
+                pred = gbm.predict(X_pred, num_iteration=gbm.best_iteration)
+                test_pred[:, sn] = pred
+            # X_pred = np.hstack((X_pred, test_pred.mean(axis=1).reshape((-1,1))))
+            stack_pred = pd.DataFrame({'stack_pred': test_pred.mean(axis=1)}, index=X_pred.index)
+            X_pred = pd.concat([X_pred, stack_pred], axis=1)
+        else:
+            pass
+        for bn, gbm in enumerate(self.bagging_model):
+            print(f'******************* 第{bn + 1}次bagging predict(●• ̀ω•́ )✧ *******************')
+            pred = gbm.predict(X_pred, num_iteration=gbm.best_iteration)
+            if bn == 0:
+                pred_out = pred
+            else:
+                pred_out += pred
+        print('predict finish')
+        return pred_out / self.bagging_num
+
+###########################################################################
+
+# sbbtree.fit(X, y)
+# pred = sbbtree.predict(X_test)
